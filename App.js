@@ -29,6 +29,7 @@ import TodayExercise from './screens/TodayExercise';
 import CreatePost from './screens/CreatePost';
 import UpdatePost from './screens/UpdatePost';
 import ListPost from './screens/ListPost';
+import PostDetail from './screens/PostDetail';
 
 const Stack = createNativeStackNavigator();
 
@@ -78,6 +79,7 @@ const App = () => {
           <Stack.Screen name="CreatePost" component={CreatePost} />
           <Stack.Screen name="UpdatePost" component={UpdatePost} />
           <Stack.Screen name="ListPost" component={ListPost} />
+          <Stack.Screen name="PostDetail" component={PostDetail} />
           <Stack.Screen name="TrainerMain" component={TrainerMain} />
         </Stack.Navigator>
       ) : null}

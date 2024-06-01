@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, Button, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
+import { View, FlatList, Text, Alert, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ListPost = () => {
     const [posts, setPosts] = useState([]);
@@ -10,7 +11,12 @@ const ListPost = () => {
 
     const fetchPosts = async () => {
         try {
-            const response = await fetch(`http://localhost:3000/api/posts/listPosts?page=${page}&limit=10`);
+            const token = await AsyncStorage.getItem('authToken');
+            const response = await fetch(`http://localhost:3000/api/posts/listPosts?page=${page}&limit=10`, {
+                headers: {
+                    "Authorization": token
+                }
+            });
             const result = await response.json();
             if (response.status === 200) {
                 setPosts(result.data.posts);
@@ -27,21 +33,40 @@ const ListPost = () => {
         fetchPosts();
     }, [page]);
 
+    const renderItem = ({ item }) => (
+        <TouchableOpacity
+            style={styles.postItem}
+            onPress={() => navigation.navigate('PostDetail', { ...item })}
+        >
+            <View style={styles.postContentContainer}>
+                <View style={styles.postTextContainer}>
+                    <Text style={styles.postTitle}>{item.title}</Text>
+                    <Text numberOfLines={1} style={styles.postContent}>{item.content}</Text>
+                </View>
+                <View style={styles.postLikesContainer}>
+                    <Image source={require("../assets/like.png")} style={styles.likeIcon} />
+                    <Text style={styles.postLikes}>{item.likes ? item.likes.length : 0}</Text>
+                </View>
+            </View>
+        </TouchableOpacity>
+    );
+
     return (
         <View style={styles.outerContainer}>
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
                 <Image source={require("../assets/rightarrow-1.png")} style={styles.backIcon} />
             </TouchableOpacity>
             <View style={styles.container}>
+                <View style={styles.headerContainer}>
+                    <Text style={styles.headerText}>All Posts</Text>
+                    <TouchableOpacity style={styles.createButton} onPress={() => navigation.navigate('CreatePost')}>
+                        <Text style={styles.createButtonText}>Create New Post</Text>
+                    </TouchableOpacity>
+                </View>
                 <FlatList
                     data={posts}
                     keyExtractor={(item) => item.post_id.toString()}
-                    renderItem={({ item }) => (
-                        <View style={styles.postItem}>
-                            <Text style={styles.postTitle}>{item.title}</Text>
-                            <Text style={styles.postContent}>{item.content}</Text>
-                        </View>
-                    )}
+                    renderItem={renderItem}
                     contentContainerStyle={styles.list}
                 />
                 <View style={styles.pagination}>
@@ -50,19 +75,16 @@ const ListPost = () => {
                         disabled={page === 1}
                         onPress={() => setPage(page - 1)}
                     >
-                        <Text style={styles.pageButtonText}>Previous Page</Text>
+                        <Text style={styles.pageButtonText}>이전</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         style={[styles.pageButton, page === totalPages && styles.disabledButton]}
                         disabled={page === totalPages}
                         onPress={() => setPage(page + 1)}
                     >
-                        <Text style={styles.pageButtonText}>Next Page</Text>
+                        <Text style={styles.pageButtonText}>다음</Text>
                     </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.createButton} onPress={() => navigation.navigate('CreatePost')}>
-                    <Text style={styles.createButtonText}>Create New Post</Text>
-                </TouchableOpacity>
             </View>
         </View>
     );
@@ -71,8 +93,7 @@ const ListPost = () => {
 const styles = StyleSheet.create({
     outerContainer: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
-        padding: 16,
+        backgroundColor: '#D7F2EC',
     },
     backButton: {
         position: 'absolute',
@@ -86,49 +107,82 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
         padding: 16,
         paddingTop: 70,
+    },
+    headerContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    headerText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#000000',
+        left: 140,
     },
     list: {
         paddingBottom: 20,
     },
     postItem: {
-        backgroundColor: '#FFFFFF',
-        padding: 16,
-        borderRadius: 8,
-        marginBottom: 12,
+        backgroundColor: '#fff',
+        padding: 8,
+        borderRadius: 10,
+        marginBottom: 10,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
-        shadowRadius: 4,
+        shadowRadius: 3,
         elevation: 3,
     },
+    postContentContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    postTextContainer: {
+        flex: 1,
+    },
     postTitle: {
-        fontSize: 18,
+        fontSize: 14,
         fontWeight: 'bold',
         marginBottom: 8,
         color: '#333333',
     },
     postContent: {
-        fontSize: 14,
+        fontSize: 10,
         color: '#666666',
+    },
+    postLikesContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    likeIcon: {
+        width: 20,
+        height: 20,
+        marginRight: 5,
+    },
+    postLikes: {
+        fontSize: 12,
+        color: '#02AE85',
     },
     pagination: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginTop: 20,
+        marginTop: 10,
     },
     pageButton: {
         backgroundColor: '#02AE85',
         padding: 10,
-        borderRadius: 8,
+        borderRadius: 10,
         alignItems: 'center',
         flex: 1,
         marginHorizontal: 5,
     },
     disabledButton: {
-        backgroundColor: '#cccccc',
+        backgroundColor: '#02AE85',
+        marginBottom:20,
     },
     pageButtonText: {
         color: '#FFFFFF',
@@ -136,14 +190,13 @@ const styles = StyleSheet.create({
     },
     createButton: {
         backgroundColor: '#02AE85',
-        padding: 15,
-        borderRadius: 8,
+        padding: 10,
+        borderRadius: 10,
         alignItems: 'center',
-        marginTop: 20,
     },
     createButtonText: {
         color: '#FFFFFF',
-        fontSize: 18,
+        fontSize: 10,
         fontWeight: 'bold',
     },
 });

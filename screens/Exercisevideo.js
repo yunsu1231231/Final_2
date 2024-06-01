@@ -8,16 +8,16 @@ import { color } from "@rneui/base";
 
 const Exercisevideo = () => {
   const navigation = useNavigation();
-  const [userEmail, setUserEmail] = useState("");
+  const [postName, setPostName] = useState("");
 
   useEffect(() => {
-    const fetchUserEmail = async () => {
-      const email = await AsyncStorage.getItem('userEmail');
-      if (email) {
-        setUserEmail(email);
+    const fetchPostName = async () => {
+      const name = await AsyncStorage.getItem('postName');
+      if (name) {
+        setPostName(name);
       }
     };
-    fetchUserEmail();
+    fetchPostName();
   }, []);
 
   const openYouTubeLink = (url) => {
@@ -47,7 +47,7 @@ const Exercisevideo = () => {
         source={require("../assets/Ellipse.png")}
       />
       <View style={styles.heading}>
-        <Text style={styles.text}>{`${userEmail} 님 !`}</Text>
+        <Text style={styles.text}>{`${postName} 님 !`}</Text>
         <Text style={styles.text1}>오늘도 운동하러 오셨군요 !</Text>
       </View>
       <Pressable
@@ -425,3 +425,4 @@ const styles = StyleSheet.create({
 });
 
 export default Exercisevideo;
+

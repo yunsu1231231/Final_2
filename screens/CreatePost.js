@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Alert, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, TextInput, StyleSheet, Alert, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,15 +8,21 @@ const CreatePost = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [image, setImage] = useState(null);
-  const [instagramTag, setInstagramTag] = useState('');
-  const [likes, setLikes] = useState(0);
-  const [liked, setLiked] = useState(false);
+  const [postname, setPostname] = useState('');
   const navigation = useNavigation();
 
-   
+  useEffect(() => {
+    const fetchPostname = async () => {
+      const storedPostname = await AsyncStorage.getItem('postname');
+      if (storedPostname) {
+        setPostname(storedPostname);
+      }
+    };
+    fetchPostname();
+  }, []);
+
   const pickImage = async () => {
     const result = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    console.log(result);
     if (result.granted === false) {
       Alert.alert('Permission Denied', 'You need to allow permission to access the gallery');
       return;
@@ -29,40 +35,24 @@ const CreatePost = () => {
       quality: 1,
     });
 
-    console.log(pickerResult.assets[0]);
-
-
-    if (!pickerResult.assets[0].canceled) {
+    if (!pickerResult.canceled) {
       setImage(pickerResult.assets[0].uri);
     }
   };
 
   const createPost = async () => {
     const formData = new FormData();
-    formData.append('user_id', '1'); // Replace with dynamic user ID if needed
+    formData.append('user_id', '1'); //
     formData.append('title', title);
     formData.append('content', content);
-    formData.append('instagram_tag', instagramTag);
-    formData.append('likes', likes);
+    formData.append('postname', postname); 
 
-  const base64 = image // Place your base64 url here.
-  const res = await fetch(base64)
-  const blob = await res.blob()
+    const base64 = image; // 이미지 받아오기
+    const res = await fetch(base64);
+    const blob = await res.blob();
   
-  const file = new File([blob], "filename.jpeg");
-  formData.append('photo', file)
-
-    /*
-    if (image) {
-      formData.append('photo', {
-        uri: image,
-        type: 'image/jpeg',
-        name: 'photo.jpg',
-      });
-    }
-    */ 
-
-    // console.log(image);
+    const file = new File([blob], "filename.jpeg");
+    formData.append('photo', file);
 
     try {
       const token = await AsyncStorage.getItem('authToken');
@@ -74,11 +64,10 @@ const CreatePost = () => {
         },
       });
       const text = await response.text();
-      console.log(text); // 서버 응답 텍스트 확인
       const data = JSON.parse(text);
       if (response.status === 201) {
         Alert.alert('Success', `Post created with ID: ${data.id}`);
-        setPostId(data.id); // Save the post ID for liking
+        navigation.navigate('PostDetail', { title, content, image }); // Navigate to PostDetail
       } else {
         Alert.alert('Error', data.message);
       }
@@ -87,64 +76,43 @@ const CreatePost = () => {
     }
   };
 
-  const handleLike = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/posts/likePost', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ post_id: postId }),
-      });
-      const result = await response.json();
-      if (response.status === 200) {
-        setLiked(!liked);
-        setLikes(liked ? likes - 1 : likes + 1);
-        Alert.alert('Success', 'Post liked/unliked successfully');
-      } else {
-        Alert.alert('Error', result.message);
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to like/unlike post');
-    }
-  };
-
   return (
     <View style={styles.outerContainer}>
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
         <Image source={require("../assets/rightarrow-1.png")} style={styles.backIcon} />
       </TouchableOpacity>
+      <Text style={styles.greeting}>{`오늘도 운동하러 오셨군요! \n${postname}님!`}</Text>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.container}>
-          <Text style={styles.header}>오늘의 하루를 기록하세요</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Title"
-            value={title}
-            onChangeText={setTitle}
-          />
-          <TextInput
-            style={styles.textArea}
-            placeholder="Content"
-            value={content}
-            onChangeText={setContent}
-            multiline
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Instagram Tag"
-            value={instagramTag}
-            onChangeText={setInstagramTag}
-          />
-          <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-            <Text style={styles.imagePickerText}>Pick an image from gallery</Text>
-          </TouchableOpacity>
-          {image && <Image source={{ uri: image }} style={styles.image} />}
-          <TouchableOpacity style={[styles.likeButton, liked && styles.liked]} onPress={handleLike}>
-            <Text style={styles.likeButtonText}>{liked ? 'Liked' : 'Like'} ({likes})</Text>
-          </TouchableOpacity>
-          <View style={styles.buttonContainer}>
-            <Button title="Create Post" onPress={createPost} />
+        <View style={styles.innerContainer}>
+          <View style={styles.container}>
+            <Text style={styles.header}>오늘의 하루를 기록하세요 !</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Title"
+              value={title}
+              onChangeText={setTitle}
+            />
+            <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+              {image ? (
+                <Image source={{ uri: image }} style={styles.imagePickerIconContainer} />
+              ) : (
+                <View style={styles.imagePickerIconContainer}>
+                  <Image source={require("../assets/camera-1.png")} style={styles.imagePickerIcon} />
+                </View>
+              )}
+            </TouchableOpacity>
+            <TextInput
+              style={styles.textArea}
+              placeholder="Content"
+              value={content}
+              onChangeText={setContent}
+              multiline
+            />
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.createButton} onPress={createPost}>
+                <Text style={styles.createButtonText}>업로드</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -155,17 +123,23 @@ const CreatePost = () => {
 const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
-    backgroundColor: '#D7F2EC',
+    backgroundColor: '#ffffff',
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
     padding: 16,
   },
+  innerContainer: {
+    backgroundColor: '#D7F2EC',
+    padding: 20,
+    borderRadius: 10,
+    height:700,
+    marginTop:70,
+  },
   container: {
-    flex: 1,
     alignItems: 'center',
-    marginTop: 100,
+    marginTop:10,
   },
   header: {
     fontSize: 24,
@@ -175,9 +149,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   input: {
-    width: '100%',
-    height: 40,
-    borderColor: 'gray',
+    width: '97%',
+    height: 38,
+    borderColor: '#fff',
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 8,
@@ -185,9 +159,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   textArea: {
-    width: '100%',
-    height: 100,
-    borderColor: 'gray',
+    width: '97%',
+    height: 120,
+    borderColor: '#fff',
     borderWidth: 1,
     marginBottom: 12,
     paddingHorizontal: 8,
@@ -195,41 +169,42 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     textAlignVertical: 'top',
   },
-  image: {
-    width: 200,
-    height: 200,
-    marginBottom: 12,
-    alignSelf: 'center',
-    borderRadius: 8,
-  },
   imagePicker: {
-    backgroundColor: '#02AE85',
-    padding: 10,
+    width: 270,
+    height: 270,
+    backgroundColor: '#fff',
     borderRadius: 8,
     marginBottom: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  imagePickerText: {
-    color: '#fff',
-    textAlign: 'center',
-    fontSize: 16,
+  imagePickerIconContainer: {
+    width: 270,
+    height: 270,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  imagePickerIcon: {
+    width: 40,
+    height: 40,
   },
   buttonContainer: {
-    width: '100%',
-    marginTop: 20,
+    width: '80%',
+    marginTop: 10,
   },
-  likeButton: {
-    backgroundColor: '#ddd',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  liked: {
+  createButton: {
     backgroundColor: '#02AE85',
+    padding: 15,
+    borderRadius: 8,
+    marginTop:10,
+    alignItems: 'center',
   },
-  likeButtonText: {
+  createButtonText: {
     color: '#fff',
-    textAlign: 'center',
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   backButton: {
     position: 'absolute',
@@ -241,13 +216,16 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
   },
+  greeting: {
+    position: 'absolute',
+    textAlign:'right',
+    top: 60,
+    left: 150,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+  },
 });
 
 export default CreatePost;
-
-
-
-
-
-
 

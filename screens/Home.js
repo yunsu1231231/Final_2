@@ -14,17 +14,17 @@ const Home = () => {
   const { exerciseInfo } = route.params || {};
 
   const [exerciseLog, setExerciseLog] = useState([]);
-  const [userEmail, setUserEmail] = useState("");
+  const [postname, setPostname] = useState("");
   const [markedDates, setMarkedDates] = useState({});
 
   useEffect(() => {
-    const fetchUserEmail = async () => {
-      const email = await AsyncStorage.getItem('userEmail');
-      if (email) {
-        setUserEmail(email);
+    const fetchPostname = async () => {
+      const storedPostname = await AsyncStorage.getItem('postname');
+      if (storedPostname) {
+        setPostname(storedPostname);
       }
     };
-    fetchUserEmail();
+    fetchPostname();
   }, []);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ const Home = () => {
       <HomeContainer style={styles.homeContainer} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.heading}>
-          <Text style={styles.text}>{`${userEmail} 님 !`}</Text>
+          <Text style={styles.text}>{`${postname} 님 !`}</Text>
           <Text style={[styles.text1, styles.textTypo]}>
             오늘도 운동하러 오셨군요 !
           </Text>
@@ -67,22 +67,18 @@ const Home = () => {
         <View style={[styles.homeItem, styles.homeLayout]} />
         <View style={[styles.homeInner, styles.homeLayout]} />
         
-       
-        
         <Pressable
-          style={[styles.backbutton, styles.backbuttonLayout]}
+          style={styles.backButton}
           onPress={() => navigation.navigate("ServiceStart")}
         >
-          <View style={[styles.backbuttonChild, styles.backbuttonChildBorder]} />
           <Image
-            style={styles.rightArrow1Icon}
-            contentFit="cover"
             source={require("../assets/rightarrow-1.png")}
+            style={styles.backIcon}
           />
         </Pressable>
-         <Pressable
+        <Pressable
           onPress={() => navigation.navigate("ListPost")}
-          style={styles.shoesIconPressable} // Add a new style for the pressable area
+          style={styles.shoesIconPressable}
         >
           <Image
             style={styles.shoesIcon}
@@ -93,7 +89,7 @@ const Home = () => {
         
         <Pressable
           onPress={() => navigation.navigate("ListPost")}
-          style={styles.text2Pressable} // Add a new style for the pressable text area
+          style={styles.text2Pressable}
         >
           <Text style={[styles.text2, styles.text2Layout]}>오늘의 하루</Text>
         </Pressable>
@@ -130,14 +126,13 @@ const Home = () => {
 
 const styles = StyleSheet.create({
   textTypo: {
-    
     fontFamily: FontFamily.latoBold,
     fontWeight: "600",
     textAlign: "left",
   },
   text2Layout: {
-    backgroundColor:Color.colorGray_300,
-    weight:50,
+    backgroundColor: Color.colorGray_300,
+    weight: 50,
     height: 24,
     position: "absolute",
   },
@@ -207,10 +202,10 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   homeItem: {
-    top : 150,
+    top: 150,
     left: 27,
-    height :50,
-    weight:50,
+    height: 50,
+    weight: 50,
   },
   homeInner: {
     left: 205,
@@ -228,34 +223,15 @@ const styles = StyleSheet.create({
     left: 60,
     position: "absolute",
   },
-  backbutton: {
-    position: "absolute",
+  backButton: {
+    position: 'absolute',
     top: 40,
     left: 10,
-    height: 39,
-    width: 41,
+    zIndex: 1,
   },
-  backbuttonChild: {
-    borderRadius: Border.br_3xs,
-    borderColor: Color.primary,
-    borderWidth: 2,
-    borderStyle: "solid",
-    height: "100%",
-    width: "100%",
-  },
-  backbuttonLayout: {
-    height: 39,
-    width: 41,
-  },
-  backbuttonChildBorder: {
-    borderColor: Color.primary,
-  },
-  rightArrow1Icon: {
-    position: "absolute",
-    top: 11,
-    left: 10,
-    width: 20,
-    height: 16,
+  backIcon: {
+    width: 24,
+    height: 24,
   },
   child: {
     top: 20,
@@ -263,8 +239,8 @@ const styles = StyleSheet.create({
   },
   childLayout: {
     backgroundColor: Color.colorBlack,
-    top : 30,
-    left:202,
+    top: 30,
+    left: 202,
     height: 129,
     width: 163,
     position: "absolute",
@@ -319,13 +295,15 @@ const styles = StyleSheet.create({
   exerciseInfoText: {
     fontSize: FontSize.size_md,
     color: Color.colorBlack,
-    marginTop :1,
+    marginTop: 1,
     marginBottom: 1,
-    marginLeft:5,
+    marginLeft: 5,
   },
 });
 
 export default Home;
+
+
 
 
 

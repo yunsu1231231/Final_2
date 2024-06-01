@@ -7,16 +7,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ServiceStart = () => {
   const navigation = useNavigation();
-  const [userEmail, setUserEmail] = React.useState("");
+  const [postname, setPostname] = React.useState("");
 
   React.useEffect(() => {
-    const fetchUserEmail = async () => {
-      const email = await AsyncStorage.getItem('userEmail'); //로그인시 사용 user_id 추가
-      if (email) {
-        setUserEmail(email);
+    const fetchPostname = async () => {
+      const storedPostname = await AsyncStorage.getItem('postname'); // SignUp에서 저장한 postname을 불러옴
+      if (storedPostname) {
+        setPostname(storedPostname);
       }
     };
-    fetchUserEmail();
+    fetchPostname();
   }, []);
 
   return (
@@ -34,7 +34,7 @@ const ServiceStart = () => {
         />
       </Pressable>
       
-      <Text style={styles.text}>{`어서오세요 ! ${userEmail} 님!\n이용하실 서비스를 \n선택해주세요.`}</Text>
+      <Text style={styles.text}>{`어서오세요 ! ${postname} 님!\n이용하실 서비스를 \n선택해주세요.`}</Text>
       <Image
         style={styles.servicestartItem}
         contentFit="cover"
@@ -198,4 +198,6 @@ const styles = StyleSheet.create({
 });
 
 export default ServiceStart;
+
+
 

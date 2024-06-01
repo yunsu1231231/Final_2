@@ -5,6 +5,7 @@ import { Image } from "expo-image";
 import { useNavigation } from "@react-navigation/native";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
 import { useState } from "react";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SignUp = () => {
   const navigation = useNavigation();
@@ -33,7 +34,7 @@ const SignUp = () => {
           password: password,
           email: email,
           postname: postname,
-          confirmPassword:confirmPassword,
+          confirmPassword: confirmPassword,
           is_trainer: isTrainer,
           specialization: specialization,
         }),
@@ -43,6 +44,7 @@ const SignUp = () => {
 
       if (data.code === 200) {
         Alert.alert("Success", "User registered successfully!");
+        await AsyncStorage.setItem('postname', postname);  // 저장 부분 추가
         navigation.navigate("SignUp1");
       } else {
         Alert.alert("Error", data.message || "Registration failed. Please try again.");
@@ -344,7 +346,3 @@ const styles = StyleSheet.create({
 });
 
 export default SignUp;
-
-
-
-
