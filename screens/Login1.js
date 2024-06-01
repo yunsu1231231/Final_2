@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, View, Text, Pressable, Alert } from "react-native";
+import { StyleSheet, View, Text, Pressable, Alert, Switch } from "react-native";
 import { Image } from "expo-image";
 import { Input } from "@rneui/themed";
 import { useNavigation } from "@react-navigation/native";
@@ -7,11 +7,11 @@ import { Border, FontFamily, Color, FontSize } from "../GlobalStyles";
 import { useState } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-//처음 로그인
 const Login1 = () => {
   const navigation = useNavigation();
-  const [userid, setuserid] = useState("");
+  const [userid, setUserid] = useState("");
   const [password, setPassword] = useState("");
+  const [isTrainer, setIsTrainer] = useState(false);
 
   const handleLogin = async () => {
     try {
@@ -23,18 +23,22 @@ const Login1 = () => {
         body: JSON.stringify({
           user_id: userid,
           password: password,
+          is_trainer: isTrainer,
         }),
       });
 
       const data = await response.json();
 
-      if (data.code == 200) {
-
+      if (data.code === 200) {
         await AsyncStorage.setItem('authToken', data.token);
-        await AsyncStorage.setItem('userEmail', userid);//로그인시 이메일을 ServiceStart로 띄우기위한 저장
-
+        await AsyncStorage.setItem('userEmail', userid);
         Alert.alert("Success", "Login successful!");
-        navigation.navigate("ServiceStart");
+
+        if (isTrainer) {
+          navigation.navigate("TrainerMain");
+        } else {
+          navigation.navigate("ServiceStart");
+        }
       } else {
         Alert.alert("로그인 실패", data.message || "Login failed. Please try again.");
       }
@@ -77,7 +81,7 @@ const Login1 = () => {
         inputStyle={{}}
         containerStyle={styles.groupTextInputInput}
         value={userid}
-        onChangeText={setuserid}
+        onChangeText={setUserid}
       />
       <Input
         label="비밀번호를 입력하세요"
@@ -87,6 +91,13 @@ const Login1 = () => {
         onChangeText={setPassword}
         secureTextEntry
       />
+      <View style={styles.trainerSwitchContainer}>
+        <Text style={styles.trainerSwitchLabel}>트레이너 여부</Text>
+        <Switch
+          value={isTrainer}
+          onValueChange={setIsTrainer}
+        />
+      </View>
       <View style={[styles.parent, styles.backbuttonLayout]}>
         <Text style={[styles.text2, styles.text2FlexBox]}>반갑습니다 !</Text>
         <Image
@@ -221,6 +232,19 @@ const styles = StyleSheet.create({
     left: 34,
     width: 192,
   },
+  trainerSwitchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    left: 27,
+    top: 530,
+    position: 'absolute',
+  },
+  trainerSwitchLabel: {
+    fontSize: FontSize.size_base,
+    fontFamily: FontFamily.interMedium,
+    color: Color.colorBlack,
+    marginRight: 10,
+  },
   login: {
     backgroundColor: Color.colorWhite,
     flex: 1,
@@ -231,3 +255,4 @@ const styles = StyleSheet.create({
 });
 
 export default Login1;
+

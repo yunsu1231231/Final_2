@@ -21,6 +21,7 @@ import Mypage from './screens/Mypage';
 //import Poseestimation from './screens/Poseestimation';
 
 // New screens
+import TrainerMain from './screens/TrainerMain';
 import TrainerList from './screens/TrainerList';
 import TrainerRequests from './screens/TrainerRequests';
 import RegisterDiet from './screens/RegisterDiet';
@@ -77,6 +78,7 @@ const App = () => {
           <Stack.Screen name="CreatePost" component={CreatePost} />
           <Stack.Screen name="UpdatePost" component={UpdatePost} />
           <Stack.Screen name="ListPost" component={ListPost} />
+          <Stack.Screen name="TrainerMain" component={TrainerMain} />
         </Stack.Navigator>
       ) : null}
     </NavigationContainer>

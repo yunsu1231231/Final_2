@@ -1,8 +1,7 @@
 import * as React from "react";
-import { StyleSheet, View, Text, Pressable, Alert } from "react-native";
+import { StyleSheet, View, Text, Pressable, Alert, Switch, ScrollView } from "react-native";
 import { Input } from "@rneui/themed";
 import { Image } from "expo-image";
-//import Component from "../components/Component";
 import { useNavigation } from "@react-navigation/native";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
 import { useState } from "react";
@@ -13,8 +12,8 @@ const SignUp = () => {
   const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  // const [isTrainer, setIsTrainer] = useState(false);
-  // const [specialization, setSpecialization] = useState("");
+  const [isTrainer, setIsTrainer] = useState(false);
+  const [specialization, setSpecialization] = useState("");
   const [postname, setPostname] = useState(""); // nickname = post_id에 사용하는 username
 
   const handleSignUp = async () => {
@@ -34,10 +33,9 @@ const SignUp = () => {
           password: password,
           email: email,
           postname: postname,
-          confirmPassword:confirmPassword
-
-          // is_trainer: isTrainer,
-          // specialization: specialization,
+          confirmPassword:confirmPassword,
+          is_trainer: isTrainer,
+          specialization: specialization,
         }),
       });
 
@@ -55,67 +53,11 @@ const SignUp = () => {
     }
   };
 
-  return (
-    <View style={styles.signUp}>
-      <View style={styles.signUpChild} />
-      <Text style={styles.text}>{`환영합니다!
-몇가지 개인정보들을
-작성해주세요`}</Text>
-      <Text style={[styles.text1, styles.textTypo1]}></Text>
-      <Text style={[styles.text2, styles.textTypo1]}>
-      </Text>
-      <Text style={[styles.text3, styles.textTypo1]}>
-      </Text>
-      <Text style={[styles.text4, styles.textTypo]}>
-      </Text>
-      <Text style={[styles.text5, styles.textTypo]}>
-      </Text>
-      <Text style={[styles.text6, styles.textTypo1]}></Text>
+  // Calculate the top position for the sign up button
+  const signUpButtonTop = isTrainer ? 831 : 771;
 
-      <Input
-        label="닉네임을 입력하세요"
-        inputStyle={{}}
-        containerStyle={styles.groupTextInputInput}
-        value={postname}
-        onChangeText={setPostname}
-      />
-      <Input
-        label="이름을 입력하세요"
-        inputStyle={{}}
-        containerStyle={styles.groupTextInput1Input}
-        value={username}
-        onChangeText={setUsername}
-      />
-      <Input
-        label="이메일 주소를 입력하세요"
-        inputStyle={{}}
-        containerStyle={styles.groupTextInput2Input}
-        value={email}
-        onChangeText={setEmail}
-      />
-      <Input
-        label="비밀번호를 입력하세요"
-        inputStyle={{}}
-        containerStyle={styles.groupTextInput3Input}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <Input
-        label="비밀번호를 확인하세요"
-        inputStyle={{}}
-        containerStyle={styles.groupTextInput4Input}
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        secureTextEntry
-      />
-      <Pressable
-        style={[styles.rectangleParent, styles.groupChildLayout]}
-        onPress={handleSignUp}
-      >
-        <View style={[styles.groupChild, styles.childPosition]} />
-        <Text style={styles.text7}>회원가입</Text>
-      </Pressable>
+  return (
+    <View style={styles.container}>
       <Pressable
         style={[styles.backbutton, styles.backbuttonLayout]}
         onPress={() => navigation.navigate("OpenningScreen")}
@@ -127,11 +69,76 @@ const SignUp = () => {
           source={require("../assets/rightarrow-1.png")}
         />
       </Pressable>
+      <ScrollView contentContainerStyle={styles.scrollContentContainer}>
+        <View style={styles.signUpChild} />
+        <Text style={styles.text}>{`환영합니다!
+몇가지 개인정보들을
+작성해주세요`}</Text>
+        <Input
+          label="닉네임을 입력하세요"
+          inputStyle={{}}
+          containerStyle={styles.groupTextInputInput}
+          value={postname}
+          onChangeText={setPostname}
+        />
+        <Input
+          label="이름을 입력하세요"
+          inputStyle={{}}
+          containerStyle={styles.groupTextInput1Input}
+          value={username}
+          onChangeText={setUsername}
+        />
+        <Input
+          label="이메일 주소를 입력하세요"
+          inputStyle={{}}
+          containerStyle={styles.groupTextInput2Input}
+          value={email}
+          onChangeText={setEmail}
+        />
+        <Input
+          label="비밀번호를 입력하세요"
+          inputStyle={{}}
+          containerStyle={styles.groupTextInput3Input}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
+        <Input
+          label="비밀번호를 확인하세요"
+          inputStyle={{}}
+          containerStyle={styles.groupTextInput4Input}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
+        <View style={styles.trainerSwitchContainer}>
+          <Text style={styles.trainerSwitchLabel}>트레이너 여부</Text>
+          <Switch
+            value={isTrainer}
+            onValueChange={setIsTrainer}
+          />
+        </View>
+        
+        <Pressable
+          style={[styles.rectangleParent, { top: signUpButtonTop }]}
+          onPress={handleSignUp}
+        >
+          <View style={[styles.groupChild, styles.childPosition]} />
+          <Text style={styles.text7}>회원가입</Text>
+        </Pressable>
+      </ScrollView>
     </View>
   );
 };  
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Color.colorWhite,
+  },
+  scrollContentContainer: {
+    paddingBottom: 100, // Add some padding to the bottom
+  },
   groupTextInputInput: {
     left: 27,
     width: 339,
@@ -167,6 +174,13 @@ const styles = StyleSheet.create({
     top: 642,
     position: "absolute",
   },
+  /*groupTextInput5Input: {
+    left: 27,
+    width: 339,
+    height: 61,
+    top: 732,
+    position: "absolute",
+  },*/
   textTypo1: {
     height: 24,
     fontFamily: FontFamily.interMedium,
@@ -285,7 +299,6 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   rectangleParent: {
-    top: 771,
     left: 27,
   },
   backbuttonChild: {
@@ -306,6 +319,7 @@ const styles = StyleSheet.create({
   backbutton: {
     top: 45,
     left: 14,
+    zIndex: 1,
   },
   signUp: {
     backgroundColor: Color.colorWhite,
@@ -314,7 +328,23 @@ const styles = StyleSheet.create({
     height: 852,
     overflow: "hidden",
   },
+  trainerSwitchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    left: 27,
+    top: 702,
+    position: 'absolute',
+  },
+  trainerSwitchLabel: {
+    fontSize: FontSize.size_base,
+    fontFamily: FontFamily.interMedium,
+    color: Color.colorBlack,
+    marginRight: 10,
+  },
 });
 
 export default SignUp;
+
+
+
 
