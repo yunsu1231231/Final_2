@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, StyleSheet, Alert, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const CreatePost = () => {
   const [title, setTitle] = useState('');
@@ -12,8 +13,10 @@ const CreatePost = () => {
   const [liked, setLiked] = useState(false);
   const navigation = useNavigation();
 
+   
   const pickImage = async () => {
     const result = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    console.log(result);
     if (result.granted === false) {
       Alert.alert('Permission Denied', 'You need to allow permission to access the gallery');
       return;
@@ -26,8 +29,11 @@ const CreatePost = () => {
       quality: 1,
     });
 
-    if (!pickerResult.canceled) {
-      setImage(pickerResult.uri);
+    console.log(pickerResult.assets[0]);
+
+
+    if (!pickerResult.assets[0].canceled) {
+      setImage(pickerResult.assets[0].uri);
     }
   };
 
@@ -38,6 +44,15 @@ const CreatePost = () => {
     formData.append('content', content);
     formData.append('instagram_tag', instagramTag);
     formData.append('likes', likes);
+
+  const base64 = image // Place your base64 url here.
+  const res = await fetch(base64)
+  const blob = await res.blob()
+  
+  const file = new File([blob], "filename.jpeg");
+  formData.append('photo', file)
+
+    /*
     if (image) {
       formData.append('photo', {
         uri: image,
@@ -45,13 +60,17 @@ const CreatePost = () => {
         name: 'photo.jpg',
       });
     }
+    */ 
+
+    // console.log(image);
 
     try {
+      const token = await AsyncStorage.getItem('authToken');
       const response = await fetch('http://localhost:3000/api/posts/createPost', {
         method: 'POST',
         body: formData,
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Authorization": token
         },
       });
       const text = await response.text();

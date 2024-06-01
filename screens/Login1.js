@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Login1 = () => {
   const navigation = useNavigation();
-  const [userid, setUserid] = useState("");
+  const [email, setUserid] = useState("");
   const [password, setPassword] = useState("");
   const [isTrainer, setIsTrainer] = useState(false);
 
@@ -21,7 +21,7 @@ const Login1 = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          user_id: userid,
+          email: email,
           password: password,
           is_trainer: isTrainer,
         }),
@@ -31,7 +31,7 @@ const Login1 = () => {
 
       if (data.code === 200) {
         await AsyncStorage.setItem('authToken', data.token);
-        await AsyncStorage.setItem('userEmail', userid);
+        await AsyncStorage.setItem('userEmail', email);
         Alert.alert("Success", "Login successful!");
 
         if (isTrainer) {
@@ -80,7 +80,7 @@ const Login1 = () => {
         label="이메일주소를 입력하세요" 
         inputStyle={{}}
         containerStyle={styles.groupTextInputInput}
-        value={userid}
+        value={email}
         onChangeText={setUserid}
       />
       <Input

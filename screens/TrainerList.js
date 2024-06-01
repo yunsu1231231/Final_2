@@ -58,9 +58,9 @@ const TrainerList = () => {
         </View>
         {trainers.map((trainer) => (
           <View key={trainer.id} style={styles.tableRow}>
-            <Text style={styles.cellText}>{trainer.id}</Text>
-            <Text style={styles.cellText}>{trainer.name}</Text>
-            <Text style={styles.cellText}>{trainer.experience}</Text>
+            <Text style={styles.cellText}>{trainer.trainer_id}</Text>
+            <Text style={styles.cellText}>{trainer.trainer_name}</Text>
+            <Text style={styles.cellText}>{trainer.trainer_specialization}</Text> 
             <View style={styles.cellButton}>
               <Button title="Select" onPress={() => selectTrainer(trainer)} />
             </View>
@@ -70,6 +70,7 @@ const TrainerList = () => {
     </View>
   );
 };
+// trainer.trainer_id <-> 필드명 통일 
 
 const styles = StyleSheet.create({
   container: {
