@@ -4,9 +4,53 @@ import { Image } from "expo-image";
 import { Input } from "@rneui/themed";
 import { useNavigation } from "@react-navigation/native";
 import { FontSize, Color, FontFamily, Border, Padding } from "../GlobalStyles";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Mypage = () => {
   const navigation = useNavigation();
+  const [userProfile, setUserProfile] = useState(null); // body만 통일시키고 이건 
+
+  const fetchUserProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch('http://localhost:3000/api/posts/getUserProfile', {
+        method: 'GET',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        return data.data; // 사용자 정보 반환
+      } else {
+        Alert.alert('Error', data.message);
+        return null;
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch user profile');
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      const profile = await fetchUserProfile();
+      if (profile) {
+        setUserProfile(profile);
+      }
+    };
+
+    loadUserProfile();
+  }, []);
+
+  if (!userProfile) {
+    return <Text>Loading...</Text>;
+  }
+
+
 
   return (
     <View style={[styles.mypage, styles.iconLayout1]}>

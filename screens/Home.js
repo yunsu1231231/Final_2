@@ -7,6 +7,7 @@ import { Calendar } from "react-native-calendars";
 import HomeContainer from "../components/HomeContainer";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 const Home = () => {
   const navigation = useNavigation();
@@ -17,7 +18,50 @@ const Home = () => {
   const [postname, setPostname] = useState("");
   const [markedDates, setMarkedDates] = useState({});
 
-  useEffect(() => {
+  const fetchLogs = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch('http://localhost:3000/api/posts/getrecord', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.code === 200) {
+        setExerciseLog(data.data);
+
+        const _markedDates = {}
+
+        // console.log(data.data)
+
+        data.data.forEach(item => {
+        _markedDates[item.date] = { marked: true, dotColor: '#02AE85' }
+        })
+        
+        setMarkedDates(_markedDates)
+
+
+      } else {
+        Alert.alert('Error', data.message);
+      }
+    } catch (error) {
+      console.error('Failed to fetch exercise logs:', error);
+      Alert.alert('Error', 'Failed to fetch exercise logs.');
+    }
+  };
+
+
+  useFocusEffect(
+    React.useCallback(() => {fetchLogs()
+    }, [])
+  );
+
+
+  useEffect(() => { 
     const fetchPostname = async () => {
       const storedPostname = await AsyncStorage.getItem('postname');
       if (storedPostname) {
@@ -26,6 +70,7 @@ const Home = () => {
     };
     fetchPostname();
   }, []);
+
 
   useEffect(() => {
     if (exerciseInfo) {
@@ -40,6 +85,10 @@ const Home = () => {
   const onDayPress = (day) => {
     navigation.navigate("TodayExercise", { date: day.dateString });
   };
+
+  
+    
+
 
   return (
     <View style={styles.home}>

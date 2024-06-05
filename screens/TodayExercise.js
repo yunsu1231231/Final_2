@@ -29,7 +29,37 @@ const TodayExercise = () => {
   const onSubmit = () => {
     const newLog = { date, exercise, count1, count2 };
     setExerciseLog([...exerciseLog, newLog]);
-    navigation.navigate("Home", { exerciseInfo: { date, exercise, count1, count2 } });
+    Submit().then(res=> {navigation.navigate("Home", { exerciseInfo: { date, exercise, count1, count2 } });
+  })
+
+  };
+
+
+  const Submit = async () => {
+    const newLog = { date, exercise, count1, count2 };
+    const token = await AsyncStorage.getItem('authToken');
+
+    try {
+      const response = await fetch('http://localhost:3000/api/posts/record', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        },
+        body: JSON.stringify({ userEmail, date, exercise, count1, count2 }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        setExerciseLog([...exerciseLog, newLog]);
+        navigation.navigate("Home", { exerciseInfo: { date, exercise, count1, count2 } });
+      } else {
+        Alert.alert('Error', data.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save exercise log');
+    }
   };
 
   return (

@@ -1,23 +1,29 @@
 import React, { useState } from 'react';
 import { View, TextInput, Button, Alert, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PostComment = ({ userId, postId }) => {
     const [content, setContent] = useState('');
 
     const postComment = async () => {
-        if (!userId || !postId || !content) {
+
+        if (!postId || !content) {
             Alert.alert("Error", "All fields are required");
             return;
         }
 
+
         try {
+
+            const token = await AsyncStorage.getItem('authToken');
+
             const response = await fetch('http://localhost:3000/api/posts/comment', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': token,
                 },
                 body: JSON.stringify({
-                    user_id: userId,
                     post_id: postId,
                     content: content
                 })
@@ -47,7 +53,9 @@ const PostComment = ({ userId, postId }) => {
             />
             <TouchableOpacity
                 style={styles.button}
-                onPress={postComment}
+                // onPress={postComment}
+                onPress={() => postComment()}
+
             >
                 <Text style={styles.buttonText}>답글</Text>
             </TouchableOpacity>

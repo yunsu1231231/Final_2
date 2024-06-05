@@ -7,17 +7,38 @@ import PostComment from './PostComment';
 const PostDetail = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { post_id, title, content, image, likes } = route.params;
+  const { post_id, title, content, photo_url, likes } = route.params;
   const [likeCount, setLikeCount] = useState(likes ? likes.length : 0);
   const [liked, setLiked] = useState(false);
   const [userId, setUserId] = useState(null);
   const [postname, setPostname] = useState("");
   const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [comments, setcomments] = useState("");
+
+
+
+  useEffect(() => {
+    const fetchcomment = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch('http://localhost:3000/api/posts/getcomment?post_id=' + post_id // param 주소 받을 때 
+      , {
+        headers: {
+          'Authorization': token,
+        },
+      });
+      const result = await response.json();
+      setcomments(result.data);
+    };
+
+    fetchcomment();
+  },[])
+
+
 
   useEffect(() => {
     const fetchUserId = async () => {
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch('http://localhost:3000/api/users/me', {
+      const response = await fetch('http://localhost:3000/api/auth/payload', {
         headers: {
           'Authorization': token,
         },
@@ -39,7 +60,13 @@ const PostDetail = () => {
 
     fetchUserId();
     fetchPostname();
-  }, [likes]);
+
+    
+  }, [likes]); //like state가 변경될 때마다 use effect가 실행
+
+  // 이 부분 어떻게 처리할지 질문,, 일단 넘기기 
+
+
 
   const handleDelete = async () => {
     try {
@@ -65,6 +92,37 @@ const PostDetail = () => {
     }
   };
 
+  const addComment = async (post_id, content) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken'); // 인증 토큰 가져오기
+  
+      const response = await fetch('http://localhost:3000/api/posts/comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token, // 인증 토큰 헤더에 포함
+        },
+        body: JSON.stringify({
+          post_id: post_id,
+          content: content,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        Alert.alert('Success', 'Comment added successfully');
+        // 추가적인 성공 처리 로직 (예: 댓글 목록 갱신)
+      } else {
+        Alert.alert('Error', data.message || 'Failed to add comment');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'An error occurred. Please try again.');
+    }
+  };
+  
+
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
@@ -78,8 +136,10 @@ const PostDetail = () => {
         <View style={styles.postContainer}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.content}>{content}</Text>
+
         </View>
-        {image && <Image source={{ uri: image }} style={styles.image} />}
+        {photo_url && <Image source={{ uri: "http://localhost:3000/" + photo_url.replace(/\\/, "/")
+ }} style={styles.image} />}
         <View style={styles.actionButtonsContainer}>
           <TouchableOpacity style={styles.actionButton} onPress={handleDelete}>
             <Text style={styles.actionButtonText}>Delete</Text>
@@ -91,6 +151,10 @@ const PostDetail = () => {
             <Text style={styles.listButtonText}>목록</Text>
           </TouchableOpacity>
         </View>
+        <View>
+        {comments && comments.map(comment => (<View key={comment.id}><Text>{comment.content}</Text></View>))}
+        </View>
+
         <Modal
           visible={commentModalVisible}
           transparent={true}
