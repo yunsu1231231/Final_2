@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Text, StyleSheet, View, Pressable, ScrollView } from "react-native";
+import { Text, StyleSheet, View, Pressable, ScrollView, Alert } from "react-native";
 import { Image } from "expo-image";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
@@ -18,50 +18,13 @@ const Home = () => {
   const [postname, setPostname] = useState("");
   const [markedDates, setMarkedDates] = useState({});
 
-  const fetchLogs = async () => {
-    try {
-      const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch('http://localhost:3000/api/posts/getrecord', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token,
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.code === 200) {
-        setExerciseLog(data.data);
-
-        const _markedDates = {}
-
-        // console.log(data.data)
-
-        data.data.forEach(item => {
-        _markedDates[item.date] = { marked: true, dotColor: '#02AE85' }
-        })
-        
-        setMarkedDates(_markedDates)
-
-
-      } else {
-        Alert.alert('Error', data.message);
-      }
-    } catch (error) {
-      console.error('Failed to fetch exercise logs:', error);
-      Alert.alert('Error', 'Failed to fetch exercise logs.');
-    }
-  };
-
-
   useFocusEffect(
-    React.useCallback(() => {fetchLogs()
+    React.useCallback(() => {
+      fetchLogs();
     }, [])
   );
 
-
-  useEffect(() => { 
+  useEffect(() => {
     const fetchPostname = async () => {
       const storedPostname = await AsyncStorage.getItem('postname');
       if (storedPostname) {
@@ -71,10 +34,31 @@ const Home = () => {
     fetchPostname();
   }, []);
 
+  const fetchLogs = async () => {
+    try {
+      const storedExerciseLog = await AsyncStorage.getItem('exerciseLog');
+      const parsedExerciseLog = storedExerciseLog ? JSON.parse(storedExerciseLog) : [];
+      setExerciseLog(parsedExerciseLog);
+      const _markedDates = {};
+
+      parsedExerciseLog.forEach(item => {
+        _markedDates[item.date] = { marked: true, dotColor: '#02AE85' };
+      });
+      
+      setMarkedDates(_markedDates);
+    } catch (error) {
+      console.error('Failed to fetch exercise logs:', error);
+      Alert.alert('Error', 'Failed to fetch exercise logs.');
+    }
+  };
 
   useEffect(() => {
     if (exerciseInfo) {
-      setExerciseLog((prevLog) => [exerciseInfo, ...prevLog]);
+      setExerciseLog((prevLog) => {
+        const updatedLog = [...prevLog, exerciseInfo];
+        AsyncStorage.setItem('exerciseLog', JSON.stringify(updatedLog));
+        return updatedLog;
+      });
       setMarkedDates((prevDates) => ({
         ...prevDates,
         [exerciseInfo.date]: { marked: true, dotColor: '#02AE85' },
@@ -86,13 +70,13 @@ const Home = () => {
     navigation.navigate("TodayExercise", { date: day.dateString });
   };
 
-  
-    
-
+  const handleShoePress = () => {
+    console.log("Shoe icon pressed");
+    navigation.navigate("ListPost");
+  };
 
   return (
     <View style={styles.home}>
-      <HomeContainer style={styles.homeContainer} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.heading}>
           <Text style={styles.text}>{`${postname} 님 !`}</Text>
@@ -117,16 +101,7 @@ const Home = () => {
         <View style={[styles.homeInner, styles.homeLayout]} />
         
         <Pressable
-          style={styles.backButton}
-          onPress={() => navigation.navigate("ServiceStart")}
-        >
-          <Image
-            source={require("../assets/rightarrow-1.png")}
-            style={styles.backIcon}
-          />
-        </Pressable>
-        <Pressable
-          onPress={() => navigation.navigate("ListPost")}
+          onPress={handleShoePress}
           style={styles.shoesIconPressable}
         >
           <Image
@@ -137,7 +112,7 @@ const Home = () => {
         </Pressable>
         
         <Pressable
-          onPress={() => navigation.navigate("ListPost")}
+          onPress={() => navigation.navigate("createPost")}
           style={styles.text2Pressable}
         >
           <Text style={[styles.text2, styles.text2Layout]}>오늘의 하루</Text>
@@ -160,7 +135,7 @@ const Home = () => {
           onDayPress={onDayPress}
           markedDates={markedDates}
         />
-        {exerciseLog.map((info, index) => (
+        {exerciseLog.slice().reverse().map((info, index) => (
           <View key={index} style={styles.exerciseInfoContainer}>
             <Text style={styles.exerciseInfoText}>날짜: {info.date}</Text>
             <Text style={styles.exerciseInfoText}>운동 종류: {info.exercise}</Text>
@@ -169,6 +144,16 @@ const Home = () => {
           </View>
         ))}
       </ScrollView>
+      <HomeContainer style={styles.homeContainer} />
+      <Pressable
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+      >
+        <Image
+          source={require("../assets/rightarrow-1.png")}
+          style={styles.backIcon}
+        />
+      </Pressable>
     </View>
   );
 };
@@ -180,7 +165,6 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
   text2Layout: {
-    backgroundColor: Color.colorGray_300,
     weight: 50,
     height: 24,
     position: "absolute",
@@ -199,7 +183,7 @@ const styles = StyleSheet.create({
   },
   text: {
     top: 20,
-    left: 100,
+    left: 60,
     fontSize: FontSize.size_5xl,
     fontWeight: "800",
     fontFamily: FontFamily.latoBlack,
@@ -210,7 +194,7 @@ const styles = StyleSheet.create({
   text1: {
     fontSize: FontSize.size_sm,
     position: "absolute",
-    left: 0,
+    left: 11,
     top: 0,
     color: Color.colorGray_300,
   },
@@ -276,7 +260,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 40,
     left: 10,
-    zIndex: 1,
+    zIndex: 2,
   },
   backIcon: {
     width: 24,
@@ -314,9 +298,10 @@ const styles = StyleSheet.create({
     height: 80,
   },
   shoesIconPressable: {
-    top: 50,
+    top: 220,
     left: 70,
     position: "absolute",
+    zIndex: 3, // Ensure the button is on top
   },
   home: {
     backgroundColor: Color.colorLightcyan,
@@ -326,6 +311,9 @@ const styles = StyleSheet.create({
   },
   homeContainer: {
     position: 'absolute',
+    width: '100%',
+    height: '100%',
+    zIndex: 1,
   },
   scrollViewContent: {
     paddingTop: 180,
@@ -351,9 +339,3 @@ const styles = StyleSheet.create({
 });
 
 export default Home;
-
-
-
-
-
-

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Button, Alert, Modal, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity, Alert, Modal, TouchableWithoutFeedback, Keyboard, FlatList } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import PostComment from './PostComment';
@@ -13,27 +13,22 @@ const PostDetail = () => {
   const [userId, setUserId] = useState(null);
   const [postname, setPostname] = useState("");
   const [commentModalVisible, setCommentModalVisible] = useState(false);
-  const [comments, setcomments] = useState("");
-
-
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
-    const fetchcomment = async () => {
+    const fetchComments = async () => {
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch('http://localhost:3000/api/posts/getcomment?post_id=' + post_id // param 주소 받을 때 
-      , {
+      const response = await fetch(`http://localhost:3000/api/posts/getcomment?post_id=${post_id}`, {
         headers: {
           'Authorization': token,
         },
       });
       const result = await response.json();
-      setcomments(result.data);
+      setComments(result.data);
     };
 
-    fetchcomment();
-  },[])
-
-
+    fetchComments();
+  }, []);
 
   useEffect(() => {
     const fetchUserId = async () => {
@@ -60,13 +55,7 @@ const PostDetail = () => {
 
     fetchUserId();
     fetchPostname();
-
-    
-  }, [likes]); //like state가 변경될 때마다 use effect가 실행
-
-  // 이 부분 어떻게 처리할지 질문,, 일단 넘기기 
-
-
+  }, [likes]);
 
   const handleDelete = async () => {
     try {
@@ -94,25 +83,25 @@ const PostDetail = () => {
 
   const addComment = async (post_id, content) => {
     try {
-      const token = await AsyncStorage.getItem('authToken'); // 인증 토큰 가져오기
-  
+      const token = await AsyncStorage.getItem('authToken');
+
       const response = await fetch('http://localhost:3000/api/posts/comment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token, // 인증 토큰 헤더에 포함
+          'Authorization': token,
         },
         body: JSON.stringify({
           post_id: post_id,
           content: content,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         Alert.alert('Success', 'Comment added successfully');
-        // 추가적인 성공 처리 로직 (예: 댓글 목록 갱신)
+        setComments([...comments, { id: data.commentId, content }]);
       } else {
         Alert.alert('Error', data.message || 'Failed to add comment');
       }
@@ -120,8 +109,6 @@ const PostDetail = () => {
       Alert.alert('Error', 'An error occurred. Please try again.');
     }
   };
-  
-
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -136,10 +123,20 @@ const PostDetail = () => {
         <View style={styles.postContainer}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.content}>{content}</Text>
-
         </View>
-        {photo_url && <Image source={{ uri: "http://localhost:3000/" + photo_url.replace(/\\/, "/")
- }} style={styles.image} />}
+        {photo_url && <Image source={{ uri: "http://localhost:3000/" + photo_url }} style={styles.image} />}
+        <View style={styles.commentsContainer}>
+          <Text style={styles.commentsHeader}>Comments</Text>
+          <FlatList
+            data={comments}
+            keyExtractor={(item) => item?.id?.toString() || Math.random().toString()}
+            renderItem={({ item }) => (
+              <View style={styles.comment}>
+                <Text style={styles.commentText}>{item?.content}</Text>
+              </View>
+            )}
+          />
+        </View>
         <View style={styles.actionButtonsContainer}>
           <TouchableOpacity style={styles.actionButton} onPress={handleDelete}>
             <Text style={styles.actionButtonText}>Delete</Text>
@@ -151,10 +148,6 @@ const PostDetail = () => {
             <Text style={styles.listButtonText}>목록</Text>
           </TouchableOpacity>
         </View>
-        <View>
-        {comments && comments.map(comment => (<View key={comment.id}><Text>{comment.content}</Text></View>))}
-        </View>
-
         <Modal
           visible={commentModalVisible}
           transparent={true}
@@ -228,24 +221,6 @@ const styles = StyleSheet.create({
     color: '#333',
     textAlign: 'left',
   },
-  buttonContainer: {
-    width: '100%',
-    paddingHorizontal: 16,
-    marginTop: 20,
-  },
-  listButton: {
-    backgroundColor: '#02AE85',
-    padding: 10,
-    borderRadius: 8,
-    flex: 1,
-    marginHorizontal: 5,
-    alignItems: 'center',
-  },
-  listButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    textAlign: 'center',
-  },
   actionButtonsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -275,6 +250,41 @@ const styles = StyleSheet.create({
   commentButtonText: {
     color: '#fff',
     fontSize: 14,
+  },
+  listButton: {
+    backgroundColor: '#02AE85',
+    padding: 10,
+    borderRadius: 8,
+    flex: 1,
+    marginHorizontal: 5,
+    alignItems: 'center',
+  },
+  listButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  commentsContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    marginTop: 20,
+  },
+  commentsHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#000',
+  },
+  comment: {
+    backgroundColor: '#f9f9f9',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  commentText: {
+    fontSize: 14,
+    color: '#333',
   },
   modalOverlay: {
     flex: 1,

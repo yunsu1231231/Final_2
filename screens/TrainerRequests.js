@@ -1,92 +1,113 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, FlatList, Alert, Pressable } from 'react-native';
-import { Image } from 'expo-image';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet, Pressable, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const TrainerRequests = ({ route }) => {
+  const { trainerId } = route.params;
   const navigation = useNavigation();
-  const trainer_id = route?.params?.trainer_id; // Optional chaining 사용하여 안전하게 접근
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!trainer_id) {
-      Alert.alert("Error", "Trainer ID is missing.");
-      return;
-    }
-
-    const fetchRequests = async () => {
+    const fetchTrainerRequests = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/auth/trainer-requests/${trainer_id}`);
+        const response = await fetch(`http://localhost:3000/api/getTrainerRequests/${trainerId}`);
         const data = await response.json();
-        if (data.code === 200) {
+        if (response.ok) {
           setRequests(data.requests);
         } else {
-          Alert.alert("Error", data.message || "Failed to retrieve trainer requests.");
+          setError(data.message);
         }
       } catch (error) {
-        console.error("Failed to retrieve trainer requests:", error);
-        Alert.alert("Error", "An error occurred while retrieving trainer requests.");
+        setError("Failed to retrieve trainer requests.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchRequests();
-  }, [trainer_id]);
+    fetchTrainerRequests();
+  }, [trainerId]);
 
-  const acceptRequest = async (user_id) => {
-    try {
-      const response = await fetch('http://localhost:3000/api/auth/accept-request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id,
-          trainer_id,
-        }),
-      });
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
-      const data = await response.json();
-      if (data.code === 200) {
-        Alert.alert("Success", "Coaching request accepted successfully.");
-        // 성공적으로 수락한 요청은 목록에서 제거
-        setRequests(requests.filter(request => request.user_id !== user_id));
-      } else {
-        Alert.alert("Error", data.message || "Failed to accept coaching request.");
-      }
-    } catch (error) {
-      console.error("Failed to accept coaching request:", error);
-      Alert.alert("Error", "An error occurred while accepting the coaching request.");
-    }
-  };
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
-    <View>
-      <Pressable onPress={() => navigation.navigate('Home')} style={{ margin: 10, marginTop: 100 }}>
-        <Image
-          source={require('../assets/rightarrow-1.png')}
-          style={{ width: 30, height: 30 }}
-        />
-      </Pressable>
-      {trainer_id ? (
-        <FlatList
-          data={requests}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View>
-              <Text>User ID: {item.user_id}</Text>
-              <Button title="Accept Request" onPress={() => acceptRequest(item.user_id)} />
-            </View>
-          )}
-        />
-      ) : (
-        <Text style={{ textAlign: 'center', marginTop: 70 }}>No trainer ID provided.</Text>
-      )}
+    <View style={styles.container}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('ListPost')}>
+          <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
+        </TouchableOpacity>
+      <FlatList
+        data={requests}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <View style={styles.requestItem}>
+            <Text style={styles.requestText}>Request ID: {item.id}</Text>
+            <Text style={styles.requestText}>Client ID: {item.client_id}</Text>
+            <Text style={styles.requestText}>Details: {item.details}</Text>
+          </View>
+        )}
+      />
     </View>
   );
 };
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f8f8f8',
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 10,
+    zIndex: 1,
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+  },
+  requestItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  requestText: {
+    fontSize: 16,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 10,
+    zIndex: 1,
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+  },
+});
+
 export default TrainerRequests;
-
-
-
-

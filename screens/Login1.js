@@ -35,7 +35,7 @@ const Login1 = () => {
         Alert.alert("Success", "Login successful!");
 
         if (isTrainer) {
-          navigation.navigate("TrainerMain");
+          navigation.navigate("Chatting");
         } else {
           navigation.navigate("ServiceStart");
         }
@@ -50,32 +50,23 @@ const Login1 = () => {
   return (
     <View style={styles.login}>
       <Pressable
-        style={[styles.rectangleParent, styles.groupChildLayout]}
-        onPress={handleLogin}
-      >
-        <View style={[styles.groupChild, styles.childPosition]} />
-        <Text style={[styles.text, styles.textTypo]}>로그인</Text>
-      </Pressable>
-      <Pressable
-        style={[styles.backbutton, styles.backbuttonLayout]}
+        style={styles.backButtonContainer}
         onPress={() => navigation.navigate("OpenningScreen")}
       >
-        <View style={[styles.backbuttonChild, styles.backbuttonLayout]} />
         <Image
-          style={styles.rightArrow1Icon}
+          style={styles.backButton}
           contentFit="cover"
           source={require("../assets/rightarrow-1.png")}
         />
       </Pressable>
-      <Text style={[styles.dontHaveAnContainer, styles.text2FlexBox]}>
-        <Text style={styles.dontHaveAnAccount}>
-          <Text style={styles.dontHaveAn}>Don’t have an account?</Text>
-          <Text style={styles.text1}>{` `}</Text>
-        </Text>
-        <Text style={styles.text1}>
-          <Text style={styles.textTypo}>Sign up</Text>
-        </Text>
-      </Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.text2}>반갑습니다 !</Text>
+        <Image
+          style={styles.image296Icon}
+          contentFit="cover"
+          source={require("../assets/image-296.png")}
+        />
+      </View>
       <Input
         label="이메일주소를 입력하세요" 
         inputStyle={{}}
@@ -98,14 +89,22 @@ const Login1 = () => {
           onValueChange={setIsTrainer}
         />
       </View>
-      <View style={[styles.parent, styles.backbuttonLayout]}>
-        <Text style={[styles.text2, styles.text2FlexBox]}>반갑습니다 !</Text>
-        <Image
-          style={styles.image296Icon}
-          contentFit="cover"
-          source={require("../assets/image-296.png")}
-        />
-      </View>
+      <Pressable
+        style={[styles.rectangleParent, styles.groupChildLayout]}
+        onPress={handleLogin}
+      >
+        <View style={[styles.groupChild, styles.childPosition]} />
+        <Text style={[styles.text, styles.textTypo]}>로그인</Text>
+      </Pressable>
+      <Text style={[styles.dontHaveAnContainer, styles.text2FlexBox]}>
+        <Text style={styles.dontHaveAnAccount}>
+          <Text style={styles.dontHaveAn}>Don’t have an account?</Text>
+          <Text style={styles.text1}>{` `}</Text>
+        </Text>
+        <Text style={styles.text1}>
+          <Text style={styles.textTypo}>Sign up</Text>
+        </Text>
+      </Text>
     </View>
   );
 };
@@ -139,10 +138,6 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.interSemiBold,
     fontWeight: "600",
   },
-  backbuttonLayout: {
-    height: 39,
-    position: "absolute",
-  },
   text2FlexBox: {
     textAlign: "left",
     position: "absolute",
@@ -151,10 +146,11 @@ const styles = StyleSheet.create({
     backgroundColor: Color.primary,
     height: 61,
     width: 339,
+    marginTop:20,
     position: "absolute",
   },
   text: {
-    top: 20,
+    top: 40,
     left: 131,
     fontSize: FontSize.size_base,
     lineHeight: 20,
@@ -171,28 +167,18 @@ const styles = StyleSheet.create({
     top: 560,
     left: 26,
   },
-  backbuttonChild: {
-    borderStyle: "solid",
-    borderColor: Color.primary,
-    borderWidth: 2,
+  backButtonContainer: {
+    top: 40,
+    left: 4,
     width: 41,
     height: 39,
-    borderRadius: Border.br_3xs,
-    left: 0,
-    top: 0,
-  },
-  rightArrow1Icon: {
-    top: 11,
-    left: 10,
-    width: 20,
-    height: 16,
     position: "absolute",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  backbutton: {
-    top: 44,
-    left: 14,
-    width: 41,
-    height: 39,
+  backButton: {
+    width: 24,
+    height: 24,
   },
   dontHaveAn: {
     color: Color.colorGray_500,
@@ -216,21 +202,19 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     fontFamily: FontFamily.poppinsBold,
     color: Color.colorBlack,
-    left: 0,
-    top: 0,
     textAlign: "left",
   },
   image296Icon: {
-    top: 5,
-    left: 162,
     width: 30,
     height: 30,
-    position: "absolute",
+    marginLeft: 10,
   },
-  parent: {
-    top: 230,
-    left: 34,
-    width: 192,
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 270,
+    marginLeft:35,
+    justifyContent: 'left',
   },
   trainerSwitchContainer: {
     flexDirection: 'row',
@@ -255,4 +239,5 @@ const styles = StyleSheet.create({
 });
 
 export default Login1;
+
 

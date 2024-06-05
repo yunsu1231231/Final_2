@@ -1,356 +1,185 @@
-import * as React from "react";
-import { StyleSheet, View, Pressable, Text } from "react-native";
+import React, { useState, useEffect } from "react";
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
-import { Input } from "@rneui/themed";
 import { useNavigation } from "@react-navigation/native";
-import { FontSize, Color, FontFamily, Border, Padding } from "../GlobalStyles";
+import { FontSize, Color, FontFamily, Border } from "../GlobalStyles";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Mypage = () => {
   const navigation = useNavigation();
-  const [userProfile, setUserProfile] = useState(null); // body만 통일시키고 이건 
+  
+  const [postname, setPostname] = useState("");
+  const [email, setEmail] = useState(""); 
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const fetchUserProfile = async () => {
-    try {
-      const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch('http://localhost:3000/api/posts/getUserProfile', {
-        method: 'GET',
-        headers: {
-          'Authorization': token,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      const data = await response.json();
-
-      if (response.status === 200) {
-        return data.data; // 사용자 정보 반환
-      } else {
-        Alert.alert('Error', data.message);
-        return null;
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to fetch user profile');
-      return null;
-    }
-  };
-
-  useEffect(() => {
-    const loadUserProfile = async () => {
-      const profile = await fetchUserProfile();
-      if (profile) {
-        setUserProfile(profile);
+  React.useEffect(() => {
+    const fetchPostname = async () => {
+      const storedPostname = await AsyncStorage.getItem('postname');
+      if (storedPostname) {
+        setPostname(storedPostname);
       }
     };
-
-    loadUserProfile();
+    fetchPostname();
   }, []);
 
-  if (!userProfile) {
-    return <Text>Loading...</Text>;
-  }
+  React.useEffect(() => {
+    const fetchEmail = async () => {
+      const storedEmail = await AsyncStorage.getItem('email');
+      if (storedEmail) {
+        setEmail(storedEmail);
+      }
+    };
+    fetchEmail();
+  }, []);
 
+  React.useEffect(() => {
+    const fetchPassword = async () => {
+      const storedPassword = await AsyncStorage.getItem('password');
+      if (storedPassword) {
+        setPassword(storedPassword);
+      }
+    };
+    fetchPassword();
+  }, []);
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   return (
-    <View style={[styles.mypage, styles.iconLayout1]}>
-      <View style={styles.mypageChild} />
-      <Pressable
-        style={[styles.backbutton, styles.backbuttonLayout]}
-        onPress={() => navigation.navigate("Home")}
-      >
-        <View style={[styles.backbuttonChild, styles.mypageItemBorder]} />
-        <Image
-          style={styles.rightArrow1Icon}
-          contentFit="cover"
-          source={require("../assets/rightarrow-1.png")}
-        />
-      </Pressable>
-      <View style={[styles.mypageItem, styles.mypageItemBorder]} />
-      <Image
-        style={styles.profile1Icon}
-        contentFit="cover"
-        source={require("../assets/profile.png")}
-      />
-      <Text style={styles.text}> 님의 정보</Text>
-      
-      <View style={[styles.navigationBar, styles.bgLayout]}>
-        <View style={[styles.bg, styles.bgLayout]} />
-        <Image
-          style={[styles.buttonstatisticIcon, styles.iconLayout]}
-          contentFit="cover"
-          source={require("../assets/buttonstatistic.png")}
-        />
-        <View
-          style={[styles.buttonexploreactive, styles.buttonexploreactiveLayout]}
-        >
-          <View
-            style={[
-              styles.buttonexploreactiveInner,
-              styles.buttonexploreactiveLayout,
-            ]}
-          >
-            <View style={[styles.buttonprofileParent, styles.bgPosition]}>
-              <Image
-                style={styles.iconLayout}
-                contentFit="cover"
-                source={require("../assets/buttonprofile.png")}
-              />
-              <Text style={styles.mypage1}>Mypage</Text>
+    <View style={styles.container}>
+
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
+        <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.saveButton} onPress={() => Alert.alert('저장')}>
+        <Text style={styles.saveButtonText}>저장</Text>
+      </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollContentContainer}>
+        <View style={styles.mypageContent}>
+          <Text style={styles.title}>{`${postname} 님의 정보`}</Text>
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoText}>이름: {postname}</Text>
+            <Text style={styles.infoText}>이메일:{`${email} 님의 정보`}</Text>
+            <View style={styles.passwordContainer}>
+              <Text style={styles.infoText}>
+                비밀번호: {showPassword ? password : '*'.repeat(password.length)}
+              </Text>
+              <TouchableOpacity onPress={togglePasswordVisibility}>
+                <Image source={require('../assets/hide.png')} style={styles.eyeIcon} />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
-        <Image
-          style={[styles.buttonhomeIcon, styles.iconLayout]}
-          contentFit="cover"
-          source={require("../assets/buttonhome.png")}
-        />
-        <Pressable
-          style={[styles.box5, styles.iconLayout]}
-          onPress={() => navigation.navigate("Exercisevideo")}
-        >
-          <Image
-            style={[styles.icon, styles.iconLayout1]}
-            contentFit="cover"
-            source={require("../assets/buttonexplore2.png")}
-          />
-        </Pressable>
-      </View>
-      <Text style={[styles.text1, styles.textTypo1]}>이름</Text>
-      <Text style={[styles.text2, styles.textTypo]}>닉네임</Text>
-      <Text style={[styles.text3, styles.textTypo]}>이메일</Text>
-      <Text style={[styles.text4, styles.textTypo1]}>비밀번호</Text>
-      <View style={[styles.view, styles.viewLayout]}>
-        <View style={[styles.child, styles.viewLayout]} />
-        <Text style={[styles.text5, styles.textTypo1]}>저장</Text>
+      </ScrollView>
+      <View style={styles.navbar}>
+        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+          <Image source={require('../assets/buttonhome.png')} style={styles.navIcon} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Exercisevideo')}>
+          <Image source={require('../assets/buttonexplore.png')} style={styles.navIcon} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Mypage')}>
+          <Image source={require('../assets/buttonprofile.png')} style={styles.navIcon} />
+        </TouchableOpacity>
+        
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  groupTextInputInput: {
-    left: 26,
-    width: 341,
-    height: 305,
-    top: 355,
-    position: "absolute",
-  },
-  iconLayout1: {
-    overflow: "hidden",
-    width: "100%",
-  },
-  backbuttonLayout: {
-    height: 39,
-    width: 41,
-  },
-  mypageItemBorder: {
-    borderStyle: "solid",
-    position: "absolute",
-  },
-  bgLayout: {
-    height: 64,
-    width: 340,
-    position: "absolute",
-  },
-  iconLayout: {
-    height: 24,
-    width: 24,
-  },
-  buttonexploreactiveLayout: {
-    height: 36,
-    width: 110,
-    position: "absolute",
-  },
-  bgPosition: {
-    left: 0,
-    top: 0,
-  },
-  textTypo1: {
-    height: 21,
-    fontSize: FontSize.size_base,
-    lineHeight: 24,
-    color: Color.colorBlack,
-    fontFamily: FontFamily.latoBold,
-    fontWeight: "600",
-    position: "absolute",
-  },
-  textTypo: {
-    width: 52,
-    height: 21,
-    fontSize: FontSize.size_base,
-    left: 56,
-    lineHeight: 24,
-    textAlign: "left",
-    color: Color.colorBlack,
-    fontFamily: FontFamily.latoBold,
-    fontWeight: "600",
-    position: "absolute",
-  },
-  viewLayout: {
-    height: 44,
-    width: 65,
-    position: "absolute",
-  },
-  mypageChild: {
-    top: 93,
-    left: 11,
-    borderRadius: Border.br_xl,
-    backgroundColor: Color.colorMediumseagreen_100,
-    width: 370,
-    height: 745,
-    position: "absolute",
-  },
-  backbuttonChild: {
-    borderColor: Color.primary,
-    borderWidth: 2,
-    borderRadius: Border.br_3xs,
-    left: 0,
-    top: 0,
-    height: 39,
-    width: 41,
-  },
-  rightArrow1Icon: {
-    left: 10,
-    width: 20,
-    height: 16,
-    top: 11,
-    position: "absolute",
-  },
-  backbutton: {
-    top: 45,
-    left: 15,
-    position: "absolute",
-  },
-  mypageItem: {
-    top: 333,
-    left: 196,
-    borderColor: Color.colorGainsboro_200,
-    borderRightWidth: 1,
-    width: 1,
-    height: 271,
-  },
-  profile1Icon: {
-    top: 177,
-    width: 156,
-    height: 156,
-    left: 118,
-    position: "absolute",
-  },
-  text: {
-    top: 122,
-    fontSize: FontSize.size_3xl,
-    width: 164,
-    height: 25,
-    textAlign: "left",
-    color: Color.colorBlack,
-    fontFamily: FontFamily.latoBold,
-    fontWeight: "600",
-    left: 118,
-    position: "absolute",
-  },
-  bg: {
-    borderRadius: Border.br_13xl,
-    backgroundColor: Color.colorGray_400,
-    left: 0,
-    top: 0,
-  },
-  buttonstatisticIcon: {
-    left: 170,
-    top: 21,
-    width: 24,
-    position: "absolute",
-  },
-  mypage1: {
-    fontSize: FontSize.size_smi,
-    fontWeight: "500",
-    fontFamily: FontFamily.latoLight,
-    color: Color.colorGray_400,
-    marginLeft: 4,
-    lineHeight: 24,
-    textAlign: "left",
-  },
-  buttonprofileParent: {
-    borderRadius: Border.br_24xl,
-    backgroundColor: Color.primary,
-    flexDirection: "row",
-    paddingLeft: Padding.p_base,
-    paddingTop: Padding.p_7xs,
-    paddingRight: Padding.p_lgi,
-    paddingBottom: Padding.p_7xs,
-    position: "absolute",
-  },
-  buttonexploreactiveInner: {
-    left: 0,
-    top: 0,
-  },
-  buttonexploreactive: {
-    top: 15,
-    left: 214,
-  },
-  buttonhomeIcon: {
-    left: 30,
-    top: 21,
-    width: 24,
-    position: "absolute",
-  },
-  icon: {
-    height: "100%",
-  },
-  box5: {
-    left: 102,
-    top: 20,
-    position: "absolute",
-  },
-  navigationBar: {
-    top: 769,
-    left: 27,
-  },
-  text1: {
-    top: 407,
-    width: 36,
-    height: 21,
-    fontSize: FontSize.size_base,
-    left: 56,
-    textAlign: "left",
-  },
-  text2: {
-    top: 467,
-  },
-  text3: {
-    top: 527,
-  },
-  text4: {
-    top: 587,
-    width: 62,
-    height: 21,
-    fontSize: FontSize.size_base,
-    left: 56,
-    textAlign: "left",
-  },
-  child: {
-    backgroundColor: Color.colorLightcyan,
-    borderRadius: Border.br_3xs,
-    left: 0,
-    top: 0,
-  },
-  text5: {
-    textAlign: "center",
-    width: 36,
-    height: 21,
-    fontSize: FontSize.size_base,
-    top: 11,
-    left: 15,
-  },
-  view: {
-    top: 40,
-    left: 316,
-  },
-  mypage: {
-    backgroundColor: Color.colorWhite,
+  container: {
     flex: 1,
-    height: 843,
+    backgroundColor: Color.colorWhite,
+  },
+  scrollContentContainer: {
+    paddingBottom: 100,
+  },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 10,
+    zIndex: 1,
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
+  },
+  saveButton: {
+    position: 'absolute',
+    top: 40,
+    right: 10,
+    zIndex: 1,
+    backgroundColor: Color.colorMediumseagreen_100,
+    borderRadius: Border.br_xl,
+    padding: 10,
+  },
+  saveButtonText: {
+    color: Color.colorWhite,
+    fontSize: FontSize.size_base,
+    fontFamily: FontFamily.interMedium,
+  },
+  mypageContent: {
+    marginTop: 100,
+    alignItems: 'center',
+  },
+  profileIcon: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: FontSize.size_13xl,
+    fontWeight: "800",
+    fontFamily: FontFamily.interExtraBold,
+    color: Color.colorBlack,
+    marginBottom: 20,
+  },
+  infoContainer: {
+    backgroundColor: Color.colorWhite,
+    padding: 20,
+    borderRadius: Border.br_xl,
+    width: '90%',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  infoText: {
+    fontSize: FontSize.size_base,
+    fontFamily: FontFamily.interMedium,
+    color: Color.colorBlack,
+    marginBottom: 10,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  eyeIcon: {
+    width: 24,
+    height: 24,
+    marginLeft: 10,
+  },
+  navbar: {
+    position: 'absolute',
+    bottom: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+    backgroundColor: Color.colorWhite,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: Color.colorGray,
+  },
+  navIcon: {
+    width: 30,
+    height: 30,
   },
 });
 
 export default Mypage;
+

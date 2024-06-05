@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Color, Border, FontSize, FontFamily } from "../GlobalStyles";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+//앱실행 첫화면
 const Frame = () => {
   const navigation = useNavigation();
 // 맨 처음 화면에 마운팅 될 때만 부르고 싶다면?
@@ -90,13 +91,13 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_3xs,
     borderStyle: "solid",
     borderColor: Color.colorWhite,
-    borderWidth: 3,
+    borderWidth: 4,
     height: 55,
     width: 143,
     position: "absolute",
   },
   text: {
-    top: 13,
+    top: 14,
     left: 26,
     fontSize: FontSize.size_5xl,
     fontFamily: FontFamily.interExtraBold,
@@ -111,7 +112,7 @@ const styles = StyleSheet.create({
   },
   text1: {
     marginLeft: -105,
-    top: 54,
+    top: 70,
     left: "50%",
     fontSize: 48,
     fontFamily: FontFamily.latoBlack,

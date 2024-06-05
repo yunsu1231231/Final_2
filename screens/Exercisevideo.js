@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Image, Linking, StyleSheet, Text, View, Pressable } from "react-native";
+import { Image, Linking, StyleSheet, Text, View, Pressable,TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Color, FontSize, FontFamily, Border, Padding } from "../GlobalStyles";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,16 +8,16 @@ import { color } from "@rneui/base";
 
 const Exercisevideo = () => {
   const navigation = useNavigation();
-  const [postName, setPostName] = useState("");
+  const [postname, setPostname] = React.useState("");
 
-  useEffect(() => {
-    const fetchPostName = async () => {
-      const name = await AsyncStorage.getItem('postName');
-      if (name) {
-        setPostName(name);
+  React.useEffect(() => {
+    const fetchPostname = async () => {
+      const storedPostname = await AsyncStorage.getItem('postname'); // SignUp에서 저장한 postname을 불러옴
+      if (storedPostname) {
+        setPostname(storedPostname);
       }
     };
-    fetchPostName();
+    fetchPostname();
   }, []);
 
   const openYouTubeLink = (url) => {
@@ -25,7 +25,11 @@ const Exercisevideo = () => {
   };
 
   return (
+    
     <View style={styles.exercisevideo}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
+          <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
+        </TouchableOpacity>
       <Image
         style={[styles.exercisevideoChild, styles.exercisevideoLayout]}
         contentFit="cover"
@@ -47,21 +51,11 @@ const Exercisevideo = () => {
         source={require("../assets/Ellipse.png")}
       />
       <View style={styles.heading}>
-        <Text style={styles.text}>{`${postName} 님 !`}</Text>
+        <Text style={styles.text}>{`${postname} 님 !`}</Text>
         <Text style={styles.text1}>오늘도 운동하러 오셨군요 !</Text>
       </View>
-      <Pressable
-        style={[styles.backbutton, styles.backbuttonLayout]}
-        onPress={() => navigation.navigate("Home")}
-      >
-        <View style={[styles.backbuttonChild, styles.backbuttonLayout]} />
-        <Image
-          style={styles.rightArrow1Icon}
-          contentFit="cover"
-          source={require("../assets/rightarrow-1.png")}
-        />
-      </Pressable>
-      <Pressable onPress={() => openYouTubeLink("https://www.youtube.com/watch?v=squat-video-link")}>
+
+      <Pressable onPress={() => openYouTubeLink("https://www.youtube.com/watch?v=a4mcRL99pU0")}>
         <Image
           style={styles.gym1Icon}
           contentFit="cover"
@@ -169,6 +163,16 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderStyle: "solid",
     position: "absolute",
+  },
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 10,
+    zIndex: 1,
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
   },
   backbuttonLayout: {
     height: 39,
@@ -425,4 +429,3 @@ const styles = StyleSheet.create({
 });
 
 export default Exercisevideo;
-

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity, Image, Button } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Alert, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const TrainerList = () => {
   const [trainers, setTrainers] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
+  const user_id = 1; // 실제 유저 ID로 변경
 
   useEffect(() => {
     fetchTrainers();
@@ -29,8 +30,7 @@ const TrainerList = () => {
   };
 
   const selectTrainer = (trainer) => {
-    // 트레이너 선택 로직 구현
-    Alert.alert('트레이너 선택', `${trainer.name} 트레이너를 선택했습니다.`);
+    navigation.navigate('Chatting_User', { trainer, user_id });
   };
 
   if (loading) {
@@ -43,12 +43,11 @@ const TrainerList = () => {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.backbutton} onPress={() => navigation.navigate('Home')}>
-        <View style={styles.backbuttonChild}>
-          <Image source={require("../assets/rightarrow-1.png")} style={styles.rightArrow1Icon} />
-        </View>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Home')}>
+        <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
       </TouchableOpacity>
-      <Text style={styles.title}>당신의 트레이너를 선택하세요!</Text>
+      <Text style={styles.title}>당신의 트레이너를 선택하세요 !</Text>
+      <Image source={require('../assets/male.png')} style={styles.trainerImage} />
       <View style={styles.table}>
         <View style={styles.tableHeader}>
           <Text style={styles.headerText}>Trainer ID</Text>
@@ -60,9 +59,11 @@ const TrainerList = () => {
           <View key={trainer.id} style={styles.tableRow}>
             <Text style={styles.cellText}>{trainer.trainer_id}</Text>
             <Text style={styles.cellText}>{trainer.trainer_name}</Text>
-            <Text style={styles.cellText}>{trainer.trainer_specialization}</Text> 
+            <Text style={styles.cellText}>{trainer.trainer_specialization}</Text>
             <View style={styles.cellButton}>
-              <Button title="Select" onPress={() => selectTrainer(trainer)} />
+              <TouchableOpacity style={styles.selectButton} onPress={() => selectTrainer(trainer)}>
+                <Text style={styles.selectButtonText}>선택</Text>
+              </TouchableOpacity>
             </View>
           </View>
         ))}
@@ -70,7 +71,6 @@ const TrainerList = () => {
     </View>
   );
 };
-// trainer.trainer_id <-> 필드명 통일 
 
 const styles = StyleSheet.create({
   container: {
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
-    fontSize: 14, // 글씨 크기 조정
+    fontSize: 12,
     fontWeight: 'bold',
     textAlign: 'center',
   },
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   cellText: {
     flex: 1,
-    fontSize: 8, // 글씨 크기 조정
+    fontSize: 11,
     textAlign: 'center',
   },
   cellButton: {
@@ -124,36 +124,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 20, // 글씨 크기 조정
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000000',
     textAlign: 'center',
     marginBottom: 20,
   },
-  backbutton: {
-    position: "absolute",
+  backButton: {
+    position: 'absolute',
     top: 40,
     left: 10,
-    height: 39,
-    width: 41,
+    zIndex: 1,
   },
-  backbuttonChild: {
-    borderRadius: 8,
-    borderColor: '#02AE85',
-    borderWidth: 2,
-    borderStyle: "solid",
-    height: "100%",
-    width: "100%",
+  backIcon: {
+    width: 24,
+    height: 24,
   },
-  rightArrow1Icon: {
-    position: "absolute",
-    top: 10,
-    left: 8,
-    width: 20,
-    height: 16,
+  trainerImage: {
+    width: 150,
+    height: 150,
+    marginBottom: 10,
+    margintop:10,
+  },
+  selectButton: {
+    backgroundColor: '#02AE85',
+    padding: 10,
+    borderRadius: 10,
+  },
+  selectButtonText: {
+    color: '#FFFFFF',
+    fontSize: 12,
   },
 });
 
 export default TrainerList;
-
 

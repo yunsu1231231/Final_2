@@ -15,7 +15,7 @@ const HomeContainer = () => {
     navigation.navigate("Mypage");
   };
   const onPressSNS= () => {
-    navigation.navigate("CreatePost");
+    navigation.navigate("PhotoPost");
   };
   const onPressHome= () => {
     navigation.navigate("Home");

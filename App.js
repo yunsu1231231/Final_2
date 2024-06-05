@@ -30,6 +30,9 @@ import CreatePost from './screens/CreatePost';
 import UpdatePost from './screens/UpdatePost';
 import ListPost from './screens/ListPost';
 import PostDetail from './screens/PostDetail';
+import Chatting from './screens/Chatting';
+import Chatting_User from './screens/Chatting_User';
+import PhotoPost from './screens/PhotoPost';
 
 const Stack = createNativeStackNavigator();
 
@@ -81,6 +84,10 @@ const App = () => {
           <Stack.Screen name="ListPost" component={ListPost} />
           <Stack.Screen name="PostDetail" component={PostDetail} />
           <Stack.Screen name="TrainerMain" component={TrainerMain} />
+          <Stack.Screen name="Chatting" component={Chatting} />
+          <Stack.Screen name="Chatting_User" component={Chatting_User} />
+          <Stack.Screen name="PhotoPost" component={PhotoPost} />
+
         </Stack.Navigator>
       ) : null}
     </NavigationContainer>

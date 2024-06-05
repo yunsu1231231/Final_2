@@ -32,12 +32,11 @@ const OpenningScreen = () => {
         <Text style={[styles.text2, styles.textTypo]}>회원가입</Text>
       </Pressable>
       <Pressable
-        style={[styles.backbutton, styles.backbuttonLayout]}
-        onPress={() => navigation.navigate("Frame")}
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
       >
-        <View style={[styles.backbuttonChild, styles.backbuttonLayout]} />
         <Image
-          style={styles.rightArrow1Icon}
+          style={styles.backIcon}
           contentFit="cover"
           source={require("../assets/rightarrow-1.png")}
         />
@@ -74,11 +73,6 @@ const styles = StyleSheet.create({
     borderRadius: Border.br_3xs,
     left: 0,
     top: 0,
-  },
-  backbuttonLayout: {
-    height: 39,
-    width: 41,
-    position: "absolute",
   },
   text: {
     marginLeft: -162.5,
@@ -131,32 +125,24 @@ const styles = StyleSheet.create({
     left: 26,
     width: 339,
   },
-  backbuttonChild: {
-    borderWidth: 2,
-    borderColor: Color.primary,
-    borderStyle: "solid",
-    borderRadius: Border.br_3xs,
-    left: 0,
-    top: 0,
-  },
-  rightArrow1Icon: {
-    top: 11,
+  backButton: {
+    position: 'absolute',
+    top: 40,
     left: 10,
-    width: 20,
-    height: 16,
-    position: "absolute",
+    zIndex: 1,
   },
-  backbutton: {
-    top: 44,
-    left: 14,
+  backIcon: {
+    width: 24,
+    height: 24,
   },
   openningScreen: {
     flex: 1,
     width: "100%",
-    height: 852,
+    height: "100%",
     overflow: "hidden",
     backgroundColor: Color.colorWhite,
   },
 });
 
 export default OpenningScreen;
+
