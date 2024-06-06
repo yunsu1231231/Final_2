@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, ActivityIndicator, StyleSheet, Pressable, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TrainerRequests = ({ route }) => {
   const { trainerId } = route.params;
@@ -12,8 +13,16 @@ const TrainerRequests = ({ route }) => {
   useEffect(() => {
     const fetchTrainerRequests = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/getTrainerRequests/${trainerId}`);
+          const token = await AsyncStorage.getItem('authToken'); // 인증 토큰 가져오기
+          const response = await fetch(`http://localhost:3000/api/getTrainerRequests/`,
+          {
+            headers: {
+              'Authorization': token, // 인증 토큰 헤더에 포함
+            }
+          }
+        );
         const data = await response.json();
+        console.log("getTrainerRequests", data)
         if (response.ok) {
           setRequests(data.requests);
         } else {

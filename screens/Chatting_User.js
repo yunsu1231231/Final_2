@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Chatting_User = ({ route, navigation }) => {
   const { trainer, user_id } = route.params;
@@ -14,10 +15,12 @@ const Chatting_User = ({ route, navigation }) => {
 
       // 코칭 요청 API 호출
       try {
-        const response = await fetch('http://localhost:3000/api/auth/requestCoaching', {
+          const token = await AsyncStorage.getItem('authToken'); // 인증 토큰 가져오기
+          const response = await fetch('http://localhost:3000/api/auth/requestCoaching', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': token, // 인증 토큰 헤더에 포함
           },
           body: JSON.stringify({ user_id, trainer_id: trainer.trainer_id }),
         });
