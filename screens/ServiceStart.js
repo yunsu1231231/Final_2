@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, View, Pressable, Text, Linking } from "react-native";
+import { StyleSheet, View, Pressable, Text, Linking,TouchableOpacity } from "react-native";
 import { Image } from "expo-image";
 import { useNavigation } from "@react-navigation/native";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
@@ -22,17 +22,9 @@ const ServiceStart = () => {
   return (
     <View style={styles.servicestart}>
       <View style={styles.servicestartChild} />
-      <Pressable
-        style={[styles.backbutton, styles.backbuttonLayout]}
-        onPress={() => navigation.navigate("Login1")}
-      >
-        <View style={[styles.backbuttonChild, styles.backbuttonChildBorder]} />
-        <Image
-          style={styles.rightArrow1Icon}
-          contentFit="cover"
-          source={require("../assets/rightarrow-1.png")}
-        />
-      </Pressable>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
+      </TouchableOpacity>
       
       <Text style={styles.text}>{`어서오세요 ! ${postname} 님!\n이용하실 서비스를 \n선택해주세요.`}</Text>
       <Image
@@ -71,13 +63,15 @@ const ServiceStart = () => {
 };
 
 const styles = StyleSheet.create({
-  backbuttonLayout: {
-    height: 39,
-    width: 41,
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 10,
+    zIndex: 1,
   },
-  backbuttonChildBorder: {
-    borderStyle: "solid",
-    position: "absolute",
+  backIcon: {
+    width: 24,
+    height: 24,
   },
   pressableLayout: {
     height: 172,
@@ -85,7 +79,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   textTypo: {
-    height: 18,
+    height: 23,
     width: 99,
     textAlign: "center",
     fontFamily: FontFamily.interRegular,

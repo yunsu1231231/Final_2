@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { StyleSheet, View, Text, Pressable,TouchableOpacity } from "react-native";
 import { Input } from "@rneui/themed";
 import { Image } from "expo-image";
 import { useNavigation } from "@react-navigation/native";
@@ -10,6 +10,9 @@ const SignUp1 = () => {
 
   return (
     <View style={styles.signUp}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
+      </TouchableOpacity>
       <View style={styles.signUpChild} />
       <Text style={styles.text}>{`회원가입이 완료되었습니다!
 
@@ -53,17 +56,7 @@ const SignUp1 = () => {
         <View style={[styles.groupChild, styles.childPosition]} />
         <Text style={styles.text5}>저장</Text>
       </Pressable>
-      <Pressable
-        style={[styles.backbutton, styles.backbuttonLayout]}
-        onPress={() => navigation.navigate("SignUp")}
-      >
-        <View style={[styles.backbuttonChild, styles.backbuttonLayout]} />
-        <Image
-          style={styles.rightArrow1Icon}
-          contentFit="cover"
-          source={require("../assets/rightarrow-1.png")}
-        />
-      </Pressable>
+      
     </View>
   );
 };
@@ -118,10 +111,15 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
   },
-  backbuttonLayout: {
-    height: 39,
-    width: 41,
-    position: "absolute",
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 10,
+    zIndex: 1,
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
   },
   signUpChild: {
     top: 93,

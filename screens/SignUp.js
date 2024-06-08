@@ -1,5 +1,5 @@
 import * as React from "react";
-import { StyleSheet, View, Text, Pressable, Alert, Switch, ScrollView } from "react-native";
+import { StyleSheet, View, Text, Pressable, Alert, Switch, ScrollView,TouchableOpacity } from "react-native";
 import { Input } from "@rneui/themed";
 import { Image } from "expo-image";
 import { useNavigation } from "@react-navigation/native";
@@ -56,21 +56,13 @@ const SignUp = () => {
   };
 
   // Calculate the top position for the sign up button
-  const signUpButtonTop = isTrainer ? 831 : 771;
+  //const signUpButtonTop = isTrainer ? 831 : 771;
 
   return (
     <View style={styles.container}>
-      <Pressable
-        style={[styles.backbutton, styles.backbuttonLayout]}
-        onPress={() => navigation.navigate("OpenningScreen")}
-      >
-        <View style={[styles.backbuttonChild, styles.backbuttonLayout]} />
-        <Image
-          style={styles.rightArrow1Icon}
-          contentFit="cover"
-          source={require("../assets/rightarrow-1.png")}
-        />
-      </Pressable>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
+      </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.scrollContentContainer}>
         <View style={styles.signUpChild} />
         <Text style={styles.text}>{`환영합니다!
@@ -122,7 +114,7 @@ const SignUp = () => {
         </View>
         
         <Pressable
-          style={[styles.rectangleParent, { top: signUpButtonTop }]}
+          style={[styles.rectangleParent]}
           onPress={handleSignUp}
         >
           <View style={[styles.groupChild, styles.childPosition]} />
@@ -212,10 +204,15 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
   },
-  backbuttonLayout: {
-    height: 39,
-    width: 41,
-    position: "absolute",
+  backButton: {
+    position: 'absolute',
+    top: 40,
+    left: 10,
+    zIndex: 1,
+  },
+  backIcon: {
+    width: 24,
+    height: 24,
   },
   signUpChild: {
     top: 98,
@@ -302,6 +299,7 @@ const styles = StyleSheet.create({
   },
   rectangleParent: {
     left: 27,
+    top:760,
   },
   backbuttonChild: {
     borderStyle: "solid",
@@ -333,14 +331,14 @@ const styles = StyleSheet.create({
   trainerSwitchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    left: 27,
-    top: 702,
+    left: 35,
+    top: 715,
     position: 'absolute',
   },
   trainerSwitchLabel: {
     fontSize: FontSize.size_base,
     fontFamily: FontFamily.interMedium,
-    color: Color.colorBlack,
+    color: 'rgba(0, 0, 0, 0.7)8',
     marginRight: 10,
   },
 });

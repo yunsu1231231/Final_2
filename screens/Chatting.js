@@ -9,12 +9,12 @@ const Chatting = ({ navigation }) => {
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
       </TouchableOpacity>
-      <Text style={styles.text}>Chat with Trainer</Text>
+      <Text style={styles.text}>트레이너와 상담하기</Text>
       <TouchableOpacity 
         style={styles.requestButton} 
         onPress={() => navigation.navigate('TrainerRequests', { trainerId })}
       >
-        <Text style={styles.requestButtonText}>View Trainer Requests</Text>
+        <Text style={styles.requestButtonText}>상담 요청 확인하기</Text>
       </TouchableOpacity>
     </View>
   );
