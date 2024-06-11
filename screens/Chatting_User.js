@@ -1,70 +1,124 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Chatting_User = ({ route, navigation }) => {
   const { trainer, user_id } = route.params;
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const webSocket = useRef(null);
+
+  useEffect(() => {
+    // WebSocket 연결 생성
+    webSocket.current = new WebSocket('ws://localhost:3000');
+
+    webSocket.current.onopen = () => {
+      console.log('WebSocket 연결!');
+    };
+
+    webSocket.current.onclose = (event) => {
+      console.error('WebSocket 닫힘:', event);
+      // 비정상적인 종료에 대한 처리
+      if (!event.wasClean) {
+        console.error(`WebSocket 비정상 종료. 코드: ${event.code}, 이유: ${event.reason}`);
+        Alert.alert('Error', 'WebSocket connection closed unexpectedly.');
+      }
+    };
+
+    webSocket.current.onerror = (error) => {
+      console.error('WebSocket 오류:', error);
+      // 오류에 대한 처리
+      Alert.alert('Error', 'WebSocket encountered an error.');
+    };
+
+    webSocket.current.onmessage = (event) => {
+      const receivedMessage = JSON.parse(event.data);
+      setMessages((prev) => [...prev, receivedMessage]);
+    };
+
+    return () => {
+      webSocket.current?.close();
+    };
+  }, []);
 
   const sendMessage = async () => {
     if (newMessage.trim()) {
-      // 메시지 전송 로직
-      setMessages([...messages, { id: Date.now().toString(), text: newMessage, isSender: true }]);
-      setNewMessage('');
+      const messageObject = {
+        user_id,
+        trainer_id: trainer.trainer_id,
+        message: newMessage,
+        timestamp: Date.now(),
+      };
 
-      // 코칭 요청 API 호출
-      try {
-        const response = await fetch('http://localhost:3000/api/auth/requestCoaching', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ user_id, trainer_id: trainer.trainer_id }),
-        });
-        const data = await response.json();
-        if (response.ok) {
-          Alert.alert('Success', 'Coaching request sent successfully.');
-        } else {
-          Alert.alert('Error', data.message);
+      if (webSocket.current && webSocket.current.readyState === WebSocket.OPEN) {
+        webSocket.current.send(JSON.stringify(messageObject));
+        setMessages([...messages, { ...messageObject, isSender: true }]);
+        setNewMessage('');
+
+        // 코칭 요청 API 호출
+        try {
+          const token = await AsyncStorage.getItem('authToken'); // 인증 토큰 가져오기
+
+          const response = await fetch('http://localhost:3000/api/auth/requestCoaching', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': token,
+            },
+            body: JSON.stringify({
+              user_id,
+              trainer_id: trainer.trainer_id,
+              comment: newMessage,
+            }),
+          });
+          const data = await response.json();
+          if (response.ok) {
+            Alert.alert('Success', 'Coaching request sent successfully.');
+          } else {
+            Alert.alert('Error', data.message);
+          }
+        } catch (error) {
+          console.error('Failed to send coaching request:', error);
+          Alert.alert('Error', 'Failed to send coaching request.');
         }
-      } catch (error) {
-        console.error('Failed to send coaching request:', error);
-        Alert.alert('Error', 'Failed to send coaching request.');
+      } else {
+        Alert.alert('Error', 'WebSocket is not connected.');
       }
     }
   };
 
+
   const renderMessage = ({ item }) => (
     <View style={[styles.messageContainer, item.isSender ? styles.senderMessage : styles.receiverMessage]}>
-      <Text style={styles.messageText}>{item.text}</Text>
+      <Text style={styles.messageText}>{item.message}</Text>
     </View>
   );
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('TrainerList')}>
-          <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
-        </TouchableOpacity>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>{trainer.trainer_name} 트레이너와 이야기해보세요!</Text>
-      </View>
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        renderItem={renderMessage}
-      />
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={newMessage}
-          onChangeText={setNewMessage}
-          placeholder="무엇이든 물어보세요 !"
-        />
-        <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-          <Text style={styles.sendButtonText}>전송</Text>
-        </TouchableOpacity>
-      </View>
+  <View style={styles.container}>
+    <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('TrainerList')}>
+      <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
+    </TouchableOpacity>
+    <View style={styles.titleContainer}>
+      <Text style={styles.title}>{trainer.trainer_name} 트레이너와 이야기해보세요!</Text>
     </View>
+    <FlatList
+      data={messages}
+      keyExtractor={(item) => item.timestamp.toString()}
+      renderItem={renderMessage}
+    />
+    <View style={styles.inputContainer}>
+      <TextInput
+        style={styles.input}
+        value={newMessage}
+        onChangeText={setNewMessage}
+        placeholder="무엇이든 물어보세요 !"
+      />
+      <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
+        <Text style={styles.sendButtonText}>전송</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
   );
 };
 

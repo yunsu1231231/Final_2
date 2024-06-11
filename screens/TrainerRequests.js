@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, ActivityIndicator, StyleSheet, Pressable, Image } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, StyleSheet, Pressable, Image, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TrainerRequests = ({ route }) => {
   const { trainerId } = route.params;
@@ -12,7 +13,15 @@ const TrainerRequests = ({ route }) => {
   useEffect(() => {
     const fetchTrainerRequests = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/getTrainerRequests/${trainerId}`);
+        const token = await AsyncStorage.getItem('authToken'); // 인증 토큰 가져오기
+        
+        const response = await fetch(`http://localhost:3000/api/auth/getTrainerRequests?trainer_id=${trainerId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token,
+          },
+        });
         const data = await response.json();
         if (response.ok) {
           setRequests(data.requests);
@@ -47,9 +56,9 @@ const TrainerRequests = ({ route }) => {
 
   return (
     <View style={styles.container}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('ListPost')}>
-          <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
-        </TouchableOpacity>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('ListPost')}>
+        <Image source={require('../assets/rightarrow-1.png')} style={styles.backIcon} />
+      </TouchableOpacity>
       <FlatList
         data={requests}
         keyExtractor={(item) => item.id.toString()}
@@ -64,6 +73,7 @@ const TrainerRequests = ({ route }) => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
