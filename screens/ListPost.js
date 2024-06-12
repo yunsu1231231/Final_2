@@ -1,49 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Text, Alert, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, FlatList, Text, Alert, TouchableOpacity, Image, StyleSheet, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 
 const ListPost = () => {
     const [posts, setPosts] = useState([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [searchQuery, setSearchQuery] = useState('');
     const navigation = useNavigation();
 
     const likePost = async (post_id) => {
         try {
-          const token = await AsyncStorage.getItem('authToken'); // 인증 토큰 가져오기
-      
-          const response = await fetch('http://localhost:3000/api/posts/likePost', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': token, // 인증 토큰 헤더에 포함
-            },
-            body: JSON.stringify({
-              post_id: post_id,
-            }),
-          });
-      
-          const data = await response.json();
-      
-          if (response.status === 200) {
-            Alert.alert('Success', 'Post liked/unliked successfully');
-            // 필요한 경우 UI 업데이트
-            // 예: setPosts(posts.map(post => post.post_id === post_id ? data : post));
-          } else {
-            Alert.alert('Error', data.message || 'Failed to like/unlike post');
-          }
-        } catch (error) {
-          Alert.alert('Error', 'An error occurred while liking/unliking the post');
-        }
-      };
+            const token = await AsyncStorage.getItem('authToken'); // 인증 토큰 가져오기
 
-      
+            console.log(post_id);
+
+            const response = await fetch('http://localhost:3000/api/posts/likePost', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token, // 인증 토큰 헤더에 포함
+                },
+                body: JSON.stringify({
+                    post_id: post_id,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.status === 200) {
+                Alert.alert('Success', 'Post liked/unliked successfully');
+                setPosts(posts.map(post => post.post_id === post_id ? { ...post, likes: data.likes } : post));
+            } else {
+                Alert.alert('Error', data.message || 'Failed to like/unlike post');
+            }
+        } catch (error) {
+            Alert.alert('Error', 'An error occurred while liking/unliking the post');
+        }
+    };
+
     const fetchPosts = async () => {
         try {
             const token = await AsyncStorage.getItem('authToken');
-            const response = await fetch(`http://localhost:3000/api/posts/listPosts?page=${page}&limit=10`, {
+            const response = await fetch(`http://localhost:3000/api/posts/listPosts?page=${page}&limit=10&search=${searchQuery}`, {
                 headers: {
                     "Authorization": token
                 }
@@ -62,7 +62,7 @@ const ListPost = () => {
 
     useEffect(() => {
         fetchPosts();
-    }, [page]);
+    }, [page, searchQuery]);
 
     const renderItem = ({ item }) => (
         <TouchableOpacity
@@ -74,10 +74,13 @@ const ListPost = () => {
                     <Text style={styles.postTitle}>{item.title}</Text>
                     <Text numberOfLines={1} style={styles.postContent}>{item.content}</Text>
                 </View>
-                <View style={styles.postLikesContainer}>
+                <TouchableOpacity
+                    style={styles.postLikesContainer}
+                    onPress={() => likePost(item.post_id)}
+                >
                     <Image source={require("../assets/like.png")} style={styles.likeIcon} />
                     <Text style={styles.postLikes}>{item.likes ? item.likes.length : 0}</Text>
-                </View>
+                </TouchableOpacity>
             </View>
         </TouchableOpacity>
     );
@@ -94,6 +97,12 @@ const ListPost = () => {
                         <Text style={styles.createButtonText}>Create New Post</Text>
                     </TouchableOpacity>
                 </View>
+                <TextInput
+                    style={styles.searchBar}
+                    placeholder="Search posts..."
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                />
                 <FlatList
                     data={posts}
                     keyExtractor={(item) => item.post_id.toString()}
@@ -229,6 +238,17 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontSize: 10,
         fontWeight: 'bold',
+    },
+    searchBar: {
+        backgroundColor: '#fff',
+        padding: 8,
+        borderRadius: 10,
+        marginBottom: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 3,
+        elevation: 3,
     },
 });
 

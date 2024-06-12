@@ -55,6 +55,9 @@ const UpdatePost = () => {
     formData.append('post_id', postId);
     formData.append('title', title);
     formData.append('content', content);
+
+    console.log(image);
+    
     if (image) {
       formData.append('photo', {
         uri: image,

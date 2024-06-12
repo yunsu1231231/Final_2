@@ -22,7 +22,9 @@ const TrainerRequests = ({ route }) => {
             'Authorization': token,
           },
         });
+
         const data = await response.json();
+        console.log("getTrainerRequests", data)
         if (response.ok) {
           setRequests(data.requests);
         } else {
