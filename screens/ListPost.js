@@ -49,7 +49,7 @@ const ListPost = () => {
                 }
             });
             const result = await response.json();
-            if (response.status === 200) {  
+            if (response.status === 200) {
                 setPosts(result.data.posts);
                 setTotalPages(result.data.totalPages);
             } else {
@@ -233,5 +233,3 @@ const styles = StyleSheet.create({
 });
 
 export default ListPost;
-
-

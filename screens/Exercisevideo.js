@@ -62,21 +62,21 @@ const Exercisevideo = () => {
           source={require("../assets/squat.png")}
         />
       </Pressable>
-      <Pressable onPress={() => openYouTubeLink("https://www.youtube.com/watch?v=biceps-video-link")}>
+      <Pressable onPress={() => openYouTubeLink("https://www.youtube.com/watch?v=7IZtFeqtdGE")}>
         <Image
           style={styles.biceps1Icon}
           contentFit="cover"
           source={require("../assets/dumbbelcurl.png")}
         />
       </Pressable>
-      <Pressable onPress={() => openYouTubeLink("https://www.youtube.com/watch?v=gym2-video-link")}>
+      <Pressable onPress={() => openYouTubeLink("https://www.youtube.com/watch?v=66gDfjrm-gk")}>
         <Image
           style={styles.gym2Icon}
           contentFit="cover"
           source={require("../assets/lunge.png")}
         />
       </Pressable>
-      <Pressable onPress={() => openYouTubeLink("https://www.youtube.com/watch?v=standing-video-link")}>
+      <Pressable onPress={() => openYouTubeLink("https://www.youtube.com/watch?v=0Vl5X_Qa6aE")}>
         <Image
           style={styles.standing1Icon}
           contentFit="cover"

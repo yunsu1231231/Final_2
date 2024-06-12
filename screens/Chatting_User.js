@@ -14,6 +14,9 @@ const Chatting_User = ({ route, navigation }) => {
 
     webSocket.current.onopen = () => {
       console.log('WebSocket 연결!');
+      // 서버에 user_id 전송하여 클라이언트 식별
+      // webSocket.current.send(JSON.stringify({ type: 'connect', user_id }));
+      webSocket.current.send(JSON.stringify({ type: 'connect', user_id, trainer_id }));
     };
 
     webSocket.current.onclose = (event) => {
@@ -44,12 +47,24 @@ const Chatting_User = ({ route, navigation }) => {
   const sendMessage = async () => {
     if (newMessage.trim()) {
       const messageObject = {
-        user_id,
-        trainer_id: trainer.trainer_id,
+        type: 'chat',
+        sender: user_id,
+        receiver: trainer.trainer_id,
         message: newMessage,
         timestamp: Date.now(),
       };
 
+      if (webSocket.current && webSocket.current.readyState === WebSocket.OPEN) {
+        webSocket.current.send(JSON.stringify(messageObject));
+        setMessages((prev) => [...prev, { ...messageObject, isSender: true }]);
+        setNewMessage('');
+      } else {
+        Alert.alert('Error', 'WebSocket is not connected.');
+      }
+    }
+  };
+
+/*
       if (webSocket.current && webSocket.current.readyState === WebSocket.OPEN) {
         webSocket.current.send(JSON.stringify(messageObject));
         setMessages([...messages, { ...messageObject, isSender: true }]);
@@ -86,7 +101,7 @@ const Chatting_User = ({ route, navigation }) => {
       }
     }
   };
-
+*/
 
   const renderMessage = ({ item }) => (
     <View style={[styles.messageContainer, item.isSender ? styles.senderMessage : styles.receiverMessage]}>
@@ -106,6 +121,7 @@ const Chatting_User = ({ route, navigation }) => {
       data={messages}
       keyExtractor={(item) => item.timestamp.toString()}
       renderItem={renderMessage}
+      contentContainerStyle={{ paddingTop: 50}} // 원하는 만큼 상단 패딩 설정
     />
     <View style={styles.inputContainer}>
       <TextInput
@@ -160,7 +176,7 @@ const styles = StyleSheet.create({
   senderMessage: {
     backgroundColor: '#D7F2EC', // 보낸 메시지 색상
     alignSelf: 'flex-end', // 오른쪽으로 정렬
-    top:50,
+    // top:50,
   },
   receiverMessage: {
     backgroundColor: '#E6E6E6', // 받은 메시지 색상

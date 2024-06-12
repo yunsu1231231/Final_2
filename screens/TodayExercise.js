@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Text, StyleSheet, View, TextInput, Pressable, ScrollView, Alert } from "react-native";
+import { Text, StyleSheet, View, TextInput, Pressable } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Image } from "expo-image";
 import { FontFamily, FontSize, Color, Border } from "../GlobalStyles";
@@ -13,17 +13,17 @@ const TodayExercise = () => {
   const [exercise, setExercise] = useState("");
   const [count1, setCount1] = useState("");
   const [count2, setCount2] = useState("");
-  const [postname, setPostname] = useState(""); // 사용자 닉네임 상태 추가
+  const [userEmail, setUserEmail] = useState(""); // 사용자 이메일 상태 추가
   const [exerciseLog, setExerciseLog] = useState([]);
 
-  useEffect(() => { 
-    const fetchPostname = async () => {
-      const storedPostname = await AsyncStorage.getItem('postname');
-      if (storedPostname) {
-        setPostname(storedPostname);
+  useEffect(() => {
+    const fetchUserEmail = async () => {
+      const email = await AsyncStorage.getItem('userEmail');
+      if (email) {
+        setUserEmail(email);
       }
     };
-    fetchPostname();
+    fetchUserEmail();
   }, []);
 
   const onSubmit = async () => {
@@ -40,12 +40,41 @@ const TodayExercise = () => {
     }
   };
 
+
+  const Submit = async () => {
+    const newLog = { date, exercise, count1, count2 };
+    const token = await AsyncStorage.getItem('authToken');
+
+    try {
+      const response = await fetch('http://localhost:3000/api/posts/record', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        },
+        body: JSON.stringify({ userEmail, date, exercise, count1, count2 }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        setExerciseLog([...exerciseLog, newLog]);
+        navigation.navigate("Home", { exerciseInfo: { date, exercise, count1, count2 } });
+      } else {
+        Alert.alert('Error', data.message);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save exercise log');
+    }
+  };
+
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <Pressable
         style={[styles.backbutton, styles.backbuttonLayout]}
         onPress={() => navigation.navigate("Home")}
       >
+        <View style={[styles.backbuttonChild, styles.backbuttonChildBorder]} />
         <Image
           style={styles.rightArrow1Icon}
           contentFit="cover"
@@ -53,7 +82,7 @@ const TodayExercise = () => {
         />
       </Pressable>
       <Text style={styles.topic}>오늘도 운동하러 오셨군요 !</Text>
-      <Text style={styles.postnameText}>{`${postname} 님 !`}</Text>
+      <Text style={styles.userEmailText}>{`${userEmail} 님 !`}</Text>
       
       <Text style={styles.reportTitle}>Today's Report</Text>
       <Image
@@ -96,7 +125,7 @@ const TodayExercise = () => {
           <Text style={styles.exerciseInfoText}>운동 횟수: {info.count2}</Text>
         </View>
       ))}
-    </ScrollView>
+    </View>
   );
 };
 
@@ -106,15 +135,15 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: Color.colorLightcyan,
   },
-  //postnameText : 로그인한 사용자의 닉네임을 띄움
-  postnameText: {
+  //userEmailText : 로그인한 사용자의 닉네임을 띄움
+  userEmailText: {
     fontSize: FontSize.size_5xl,
     fontWeight: "800",
     fontFamily: FontFamily.latoBlack,
     textAlign: "right",
     color: Color.colorGray_300,
     marginTop: 30,
-    marginBottom: 0,
+    marginBottom: 10,
   },
   topic: {
     fontSize: FontSize.size_sm,
@@ -166,10 +195,27 @@ const styles = StyleSheet.create({
     height: 39,
     width: 41,
   },
+  backbuttonChild: {
+    borderRadius: Border.br_3xs,
+    borderColor: Color.primary,
+    borderWidth: 2,
+    borderStyle: "solid",
+    height: "100%",
+    width: "100%",
+  },
+  backbuttonLayout: {
+    height: 39,
+    width: 41,
+  },
+  backbuttonChildBorder: {
+    borderColor: Color.primary,
+  },
   rightArrow1Icon: {
+    position: "absolute",
+    top: 11,
+    left: 10,
     width: 20,
     height: 16,
-    transform: [{ rotate: '180deg' }], // 이미지 회전
   },
   saveButton: {
     backgroundColor: '#02AE85', // 버튼 배경색

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
-import { Text, StyleSheet, View, Pressable, ScrollView, Alert } from "react-native";
+import { Text, StyleSheet, View, Pressable, ScrollView } from "react-native";
 import { Image } from "expo-image";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
@@ -18,13 +18,101 @@ const Home = () => {
   const [postname, setPostname] = useState("");
   const [markedDates, setMarkedDates] = useState({});
 
+  const fetchLogs = async () => {
+    try {
+      // 로컬 저장소에서 운동 기록을 가져옵니다.
+      const storedExerciseLog = await AsyncStorage.getItem('exerciseLog');
+      const parsedExerciseLog = storedExerciseLog ? JSON.parse(storedExerciseLog) : [];
+      setExerciseLog(parsedExerciseLog);
+  
+      // 운동 기록 날짜를 표시하도록 설정합니다.
+      const _markedDates = {};
+      parsedExerciseLog.forEach(item => {
+        _markedDates[item.date] = { marked: true, dotColor: '#02AE85' };
+      });
+      setMarkedDates(_markedDates);
+  
+      // 인증 토큰을 가져와 서버에서 최신 운동 기록을 가져옵니다.
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch('http://localhost:3000/api/posts/getrecord', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        },
+      });
+  
+      const data = await response.json();
+
+      setMarkedDates(_newMarkedDates);
+
+
+      if (data.code === 200) {
+        setExerciseLog(data.data);
+  
+        const _newMarkedDates = {};
+        data.data.forEach(item => {
+          _newMarkedDates[item.date] = { marked: true, dotColor: '#02AE85' };
+        });
+  
+        // setMarkedDates(_newMarkedDates);
+      } else {
+        Alert.alert('Error', data.message);
+      }
+    } catch (error) {
+      console.error('Failed to fetch exercise logs:', error);
+      Alert.alert('Error', 'Failed to fetch exercise logs.');
+    }
+  };
+
+  
+  /*
+  const fetchLogs = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch('http://localhost:3000/api/posts/getrecord', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token,
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.code === 200) {
+        setExerciseLog(data.data);
+
+        const _markedDates = {}
+
+        console.log(data.data)
+
+        data.data.forEach(item => {
+        _markedDates[item.date] = { marked: true, dotColor: '#02AE85' }
+        })
+        
+        setMarkedDates(_markedDates)
+
+
+      } else {
+        Alert.alert('Error', data.message);
+      }
+    } catch (error) {
+      console.error('Failed to fetch exercise logs:', error);
+      Alert.alert('Error', 'Failed to fetch exercise logs.');
+    }
+  };
+  */
+
+
   useFocusEffect(
     React.useCallback(() => {
-      fetchLogs();
+      fetchLogs()
     }, [])
   );
 
-  useEffect(() => {
+
+  useEffect(() => { 
     const fetchPostname = async () => {
       const storedPostname = await AsyncStorage.getItem('postname');
       if (storedPostname) {
@@ -34,23 +122,6 @@ const Home = () => {
     fetchPostname();
   }, []);
 
-  const fetchLogs = async () => {
-    try {
-      const storedExerciseLog = await AsyncStorage.getItem('exerciseLog');
-      const parsedExerciseLog = storedExerciseLog ? JSON.parse(storedExerciseLog) : [];
-      setExerciseLog(parsedExerciseLog);
-      const _markedDates = {};
-
-      parsedExerciseLog.forEach(item => {
-        _markedDates[item.date] = { marked: true, dotColor: '#02AE85' };
-      });
-      
-      setMarkedDates(_markedDates);
-    } catch (error) {
-      console.error('Failed to fetch exercise logs:', error);
-      Alert.alert('Error', 'Failed to fetch exercise logs.');
-    }
-  };
 
   useEffect(() => {
     if (exerciseInfo) {
@@ -66,17 +137,18 @@ const Home = () => {
     }
   }, [exerciseInfo]);
 
+
   const onDayPress = (day) => {
     navigation.navigate("TodayExercise", { date: day.dateString });
   };
 
-  const handleShoePress = () => {
-    console.log("Shoe icon pressed");
-    navigation.navigate("ListPost");
-  };
+  
+    
+
 
   return (
     <View style={styles.home}>
+      <HomeContainer style={styles.homeContainer} />
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.heading}>
           <Text style={styles.text}>{`${postname} 님 !`}</Text>
@@ -101,7 +173,16 @@ const Home = () => {
         <View style={[styles.homeInner, styles.homeLayout]} />
         
         <Pressable
-          onPress={handleShoePress}
+          style={styles.backButton}
+          onPress={() => navigation.navigate("ServiceStart")}
+        >
+          <Image
+            source={require("../assets/rightarrow-1.png")}
+            style={styles.backIcon}
+          />
+        </Pressable>
+        <Pressable
+          onPress={() => navigation.navigate("ListPost")}
           style={styles.shoesIconPressable}
         >
           <Image
@@ -112,7 +193,7 @@ const Home = () => {
         </Pressable>
         
         <Pressable
-          onPress={() => navigation.navigate("createPost")}
+          onPress={() => navigation.navigate("ListPost")}
           style={styles.text2Pressable}
         >
           <Text style={[styles.text2, styles.text2Layout]}>오늘의 하루</Text>
@@ -135,7 +216,7 @@ const Home = () => {
           onDayPress={onDayPress}
           markedDates={markedDates}
         />
-        {exerciseLog.slice().reverse().map((info, index) => (
+        {exerciseLog.map((info, index) => (
           <View key={index} style={styles.exerciseInfoContainer}>
             <Text style={styles.exerciseInfoText}>날짜: {info.date}</Text>
             <Text style={styles.exerciseInfoText}>운동 종류: {info.exercise}</Text>
@@ -144,16 +225,6 @@ const Home = () => {
           </View>
         ))}
       </ScrollView>
-      <HomeContainer style={styles.homeContainer} />
-      <Pressable
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
-      >
-        <Image
-          source={require("../assets/rightarrow-1.png")}
-          style={styles.backIcon}
-        />
-      </Pressable>
     </View>
   );
 };

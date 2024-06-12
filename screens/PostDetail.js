@@ -124,7 +124,7 @@ const PostDetail = () => {
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.content}>{content}</Text>
         </View>
-        {photo_url && <Image source={{ uri: "http://localhost:3000/" + photo_url }} style={styles.image} />}
+        {photo_url && <Image source={{ uri: "http://localhost:3000/" + photo_url.replace(/\\/,"/") }} style={styles.image} />}
         <View style={styles.commentsContainer}>
           <Text style={styles.commentsHeader}>Comments</Text>
           <FlatList
@@ -205,8 +205,8 @@ const styles = StyleSheet.create({
     textAlign: 'left',
   },
   image: {
-    width: '100%',
-    height: 300,
+    width: '50%',
+    height: '50%',
     marginBottom: 12,
     borderRadius: 8,
   },

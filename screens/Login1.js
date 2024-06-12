@@ -35,9 +35,11 @@ const Login1 = () => {
         Alert.alert("Success", "Login successful!");
 
         if (isTrainer) {
-          navigation.navigate("Chatting");
+          navigation.navigate("Chatting", {user_id: data.user_id });
+          // navigation.navigate("Chatting");
         } else {
-          navigation.navigate("ServiceStart");
+          navigation.navigate("ServiceStart", { user_id: data.user_id });
+          //navigation.navigate("ServiceStart");
         }
       } else {
         Alert.alert("로그인 실패", data.message || "Login failed. Please try again.");
@@ -239,3 +241,4 @@ const styles = StyleSheet.create({
 });
 
 export default Login1;
+
